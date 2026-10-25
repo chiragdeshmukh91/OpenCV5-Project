@@ -1,0 +1,22 @@
+flowchart LR
+  subgraph Client["Operator browser"]
+    UI["React + R3F dashboard<br/>camera overlays · 3D twin · trace · review"]
+  end
+  subgraph AWS["AWS account (us-east-1)"]
+    subgraph EC2["EC2 Graviton c7g.xlarge · arm64 · Ubuntu 24.04 · no Docker"]
+      NGX["nginx :80"]
+      API["CLEARPATH API (FastAPI)<br/>Agent orchestrator · Decision engine<br/>Digital twin (NetworkX + Shapely)"]
+      VIS["Vision Service (FastAPI)<br/>OpenCV 5: quality · CLAHE/dehaze · MOG2 ·<br/>Farneback · cv.dnn YOLOX · tracking"]
+      COOL[("OpenCV build<br/>stock 5.0.0 ⇄ COOL<br/>(swappable, verified by marker)")]
+    end
+    S3[("S3<br/>footage/* · runs/*.json · app/*")]
+    CW[("CloudWatch<br/>CLEARPATH/VisionTotalMs<br/>dims: Arch, OpenCV, COOL")]
+    SSM["SSM Session Manager<br/>(no SSH keys)"]
+  end
+  UI -- "HTTPS/HTTP /api, /media" --> NGX --> API
+  API -- "POST /v1/analyze<br/>(VISION_MODE=remote)" --> VIS
+  VIS --- COOL
+  VIS -- "fetch clips" --> S3
+  API -- "archive run trace" --> S3
+  VIS -- "PutMetricData" --> CW
+  SSM -. admin .- EC2

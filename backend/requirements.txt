@@ -1,0 +1,18 @@
+# CLEARPATH backend (API + orchestrator + in-process vision + tests).
+# Pins = versions installed on the dev box (Python 3.13, x86_64) and verified to resolve with binary wheels for
+# AWS Graviton: manylinux aarch64 / CPython 3.12 (Ubuntu 24.04), see benchmarks/README.md.
+#
+# OpenCV: the dev box has opencv-python, opencv-python-headless and opencv-contrib-python 5.0.0.93 co-installed
+# (cv2 is currently loaded from opencv-python). Servers should install exactly ONE cv2 distribution; headless is
+# used here because it has no GUI/libGL dependency. Same version, same upstream build pipeline.
+opencv-python-headless==5.0.0.93
+numpy==2.5.3
+fastapi==0.162.0
+uvicorn==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32
+httpx==0.28.1
+networkx==3.7
+shapely==2.2.0
+boto3==1.43.118
+pytest==9.1.1

@@ -1,0 +1,11 @@
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+backend/runtime/
+backend/footage/*.avi
+backend/footage/upload_*
+backend/footage/plate.png
+deploy/aws/.state.env
+.pytest_cache/
+*.tar.gz

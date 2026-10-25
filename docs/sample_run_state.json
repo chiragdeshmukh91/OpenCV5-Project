@@ -1,0 +1,2455 @@
+{
+ "run_id": "20261025-080241-7a2864",
+ "scenario": {
+  "id": "S2-corroborated-east",
+  "title": "Corroborated incident in the east wing",
+  "summary": "A simulated 911 relay reports shots heard near the East Hall. Cameras in the east and centre show people running west.",
+  "trigger": {
+   "source": "SIMULATED 911 relay",
+   "claim": "Possible shots heard near East Hall",
+   "zone": "C3",
+   "confidence": 0.5
+  },
+  "expected": {
+   "primary_option": "LOCKDOWN_PLUS_EVACUATE",
+   "threat_region": [
+    "C3",
+    "R103",
+    "R106",
+    "R107",
+    "GYM"
+   ]
+  }
+ },
+ "camera_clips": {
+  "CAM-01": "normal_a",
+  "CAM-02": "flight_left_a",
+  "CAM-03": "flight_left_b",
+  "CAM-04": "normal_d",
+  "CAM-05": "empty_a",
+  "CAM-06": "normal_c",
+  "CAM-07": "flight_left_a"
+ },
+ "status": "awaiting_review",
+ "phase": "REVIEW",
+ "step": 27,
+ "started_at": 1792915361.4457054,
+ "finished_at": null,
+ "simulation": true,
+ "trace": [
+  {
+   "step": 1,
+   "t": 0.0,
+   "phase": "PERCEIVE",
+   "kind": "observation",
+   "title": "Simulated trigger received: Possible shots heard near East Hall",
+   "detail": "Source: SIMULATED 911 relay. Stated zone: C3 (East Hall). Prior confidence assigned to the report: 0.50.",
+   "reason": "Every run starts from a simulated report; reports alone are treated as unverified.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 2,
+   "t": 0.36,
+   "phase": "VALIDATE",
+   "kind": "validation",
+   "title": "Digital twin validated",
+   "detail": "C3 is the only internal connection for part of the building; C2 is the only internal connection for part of the building; C1 is the only internal connection for part of the building",
+   "reason": "Routes are only meaningful on a connected, constraint-consistent building model.",
+   "tool": {
+    "name": "twin.validate_building",
+    "args": {},
+    "duration_ms": 7.6,
+    "result": "0 errors, 3 warnings/info"
+   },
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 3,
+   "t": 0.71,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Threat-location prior initialised from the report",
+   "detail": "P(threat) = 0.50; mass concentrated on C3 and adjacent zones.",
+   "reason": "A report is weak evidence: it sets a prior, not a conclusion.",
+   "tool": null,
+   "changes": [
+    "belief.p_threat: 0 -> 0.50"
+   ],
+   "data": {}
+  },
+  {
+   "step": 4,
+   "t": 1.06,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-03 (East Hall)",
+   "detail": "Alternatives: CAM-02 (0.26), CAM-07 (0.25), CAM-04 (0.16)",
+   "reason": "Highest value 0.30: expected information on threat location 0.30.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 5,
+   "t": 6.12,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-03",
+   "detail": "Activity: Coherent rapid movement (people running in one direction). Quality issues: none. Timings: total 4707 ms, DNN 2928 ms, flow 1115 ms.",
+   "reason": "expected information on threat location 0.30",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-03",
+     "clip_id": "flight_left_b",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 4707.8,
+    "result": "4 people (max 7), speed 2.71 BH/s, running 57%, coherence 0.97, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 4707.6
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-03-01",
+    "camera_id": "CAM-03"
+   }
+  },
+  {
+   "step": 6,
+   "t": 6.47,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-03: Coherent rapid movement (people running in one direction)",
+   "detail": "People move toward heading 170\u00b0 (map); the hazard is most likely toward 350\u00b0 from CAM-03.",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.50 -> 0.86",
+    "region C3,C2,GYM,R103,R107 (0.74) -> C3,R107,R103 (0.85)",
+    "p[none] -0.356",
+    "p[C3] +0.324",
+    "p[R107] +0.073",
+    "p[R103] +0.018"
+   ],
+   "data": {}
+  },
+  {
+   "step": 7,
+   "t": 6.82,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Threat provisionally localised to C3, R107, R103",
+   "detail": "",
+   "reason": "Region mass 0.85 \u2265 0.70 and P(threat) 0.86 \u2265 0.50. Seeking independent corroboration and verifying evacuation corridors next.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 8,
+   "t": 7.17,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-02 (Central Hall)",
+   "detail": "Alternatives: CAM-07 (0.32)",
+   "reason": "Highest value 0.33: independent corroboration of the provisional threat region.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 9,
+   "t": 12.03,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-02",
+   "detail": "Activity: Coherent rapid movement (people running in one direction). Quality issues: none. Timings: total 4503 ms, DNN 2864 ms, flow 1069 ms.",
+   "reason": "independent corroboration of the provisional threat region",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-02",
+     "clip_id": "flight_left_a",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 4503.7,
+    "result": "6 people (max 9), speed 2.83 BH/s, running 100%, coherence 0.93, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 4503.6
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-02-02",
+    "camera_id": "CAM-02"
+   }
+  },
+  {
+   "step": 10,
+   "t": 12.38,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-02: Coherent rapid movement (people running in one direction)",
+   "detail": "People move toward heading 174\u00b0 (map); the hazard is most likely toward 354\u00b0 from CAM-02.",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.86 -> 0.97",
+    "region C3,R107,R103 (0.85) -> C3,R107 (0.85)",
+    "p[C3] +0.143",
+    "p[none] -0.114",
+    "p[R106] +0.006"
+   ],
+   "data": {}
+  },
+  {
+   "step": 11,
+   "t": 12.73,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-05 (Main Lobby)",
+   "detail": "Alternatives: CAM-01 (0.35), CAM-04 (0.35), CAM-06 (0.35)",
+   "reason": "Highest value 0.35: verifying a candidate evacuation corridor (LOBBY) far from the probable threat.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 12,
+   "t": 18.05,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-05",
+   "detail": "Activity: No people detected. Quality issues: none. Timings: total 4962 ms, DNN 3300 ms, flow 1088 ms.",
+   "reason": "verifying a candidate evacuation corridor (LOBBY) far from the probable threat",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-05",
+     "clip_id": "empty_a",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 4962.8,
+    "result": "0 people (max 0), speed None BH/s, running 0%, coherence 0.00, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 4962.8
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-05-03",
+    "camera_id": "CAM-05"
+   }
+  },
+  {
+   "step": 13,
+   "t": 18.4,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-05: No people detected",
+   "detail": "",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.97 -> 0.97",
+    "region C3,R107 (0.85) -> C3,R107 (0.85)"
+   ],
+   "data": {}
+  },
+  {
+   "step": 14,
+   "t": 18.75,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-01 (West Hall)",
+   "detail": "Alternatives: CAM-04 (0.35), CAM-06 (0.35)",
+   "reason": "Highest value 0.35: verifying a candidate evacuation corridor (C1) far from the probable threat.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 15,
+   "t": 24.18,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-01",
+   "detail": "Activity: Ordinary walking movement. Quality issues: none. Timings: total 5076 ms, DNN 3444 ms, flow 1075 ms.",
+   "reason": "verifying a candidate evacuation corridor (C1) far from the probable threat",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-01",
+     "clip_id": "normal_a",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 5076.7,
+    "result": "6 people (max 6), speed 0.71 BH/s, running 0%, coherence 0.32, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 5076.6
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-01-04",
+    "camera_id": "CAM-01"
+   }
+  },
+  {
+   "step": 16,
+   "t": 24.53,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-01: Ordinary walking movement",
+   "detail": "",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.97 -> 0.96",
+    "region C3,R107 (0.85) -> C3,R107,R103 (0.91)",
+    "p[none] +0.009"
+   ],
+   "data": {}
+  },
+  {
+   "step": 17,
+   "t": 24.88,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-04 (North Wing Hall)",
+   "detail": "Alternatives: CAM-06 (0.35)",
+   "reason": "Highest value 0.35: verifying a candidate evacuation corridor (C4) far from the probable threat.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 18,
+   "t": 30.56,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-04",
+   "detail": "Activity: Ordinary walking movement. Quality issues: none. Timings: total 5329 ms, DNN 3637 ms, flow 1091 ms.",
+   "reason": "verifying a candidate evacuation corridor (C4) far from the probable threat",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-04",
+     "clip_id": "normal_d",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 5329.3,
+    "result": "3 people (max 4), speed 0.85 BH/s, running 0%, coherence 0.60, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 5329.3
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-04-05",
+    "camera_id": "CAM-04"
+   }
+  },
+  {
+   "step": 19,
+   "t": 30.92,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-04: Ordinary walking movement",
+   "detail": "",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.96 -> 0.95",
+    "region C3,R107,R103 (0.91) -> C3,R107,R103 (0.92)",
+    "p[none] +0.012",
+    "p[GYM] -0.006"
+   ],
+   "data": {}
+  },
+  {
+   "step": 20,
+   "t": 31.27,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Next: analyse CAM-06 (Cafeteria)",
+   "detail": "Alternatives: none",
+   "reason": "Highest value 0.35: verifying a candidate evacuation corridor (CAF) far from the probable threat.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 21,
+   "t": 37.05,
+   "phase": "PERCEIVE",
+   "kind": "tool_call",
+   "title": "OpenCV analysis of CAM-06",
+   "detail": "Activity: Ordinary walking movement. Quality issues: none. Timings: total 5427 ms, DNN 3729 ms, flow 1096 ms.",
+   "reason": "verifying a candidate evacuation corridor (CAF) far from the probable threat",
+   "tool": {
+    "name": "vision.analyze_camera",
+    "args": {
+     "camera_id": "CAM-06",
+     "clip_id": "normal_c",
+     "enhance": "none",
+     "detect_every": 4
+    },
+    "duration_ms": 5427.1,
+    "result": "6 people (max 7), speed 1.0 BH/s, running 12%, coherence 0.24, reliability 1.00",
+    "service": {
+     "machine": "x86_64",
+     "arm64": false,
+     "on_aws": false,
+     "instance_type": null,
+     "opencv_version": "5.0.0",
+     "cool": "not_in_use",
+     "wall_ms": 5427.0
+    }
+   },
+   "changes": [],
+   "data": {
+    "analysis_id": "CAM-06-06",
+    "camera_id": "CAM-06"
+   }
+  },
+  {
+   "step": 22,
+   "t": 37.4,
+   "phase": "DECIDE",
+   "kind": "state_change",
+   "title": "Belief and twin updated from CAM-06: Ordinary walking movement",
+   "detail": "",
+   "reason": "Likelihood update tempered by measured reliability 1.00.",
+   "tool": null,
+   "changes": [
+    "P(threat) 0.95 -> 0.93",
+    "region C3,R107,R103 (0.92) -> C3,R107,R103 (0.93)",
+    "p[none] +0.015",
+    "p[CAF] -0.007"
+   ],
+   "data": {}
+  },
+  {
+   "step": 23,
+   "t": 37.75,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Stop gathering evidence",
+   "detail": "6 cameras analysed, 0 re-analyses, 0 faulted.",
+   "reason": "threat localised and all candidate evacuation corridors with cameras have been checked",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 24,
+   "t": 38.1,
+   "phase": "ACT",
+   "kind": "tool_call",
+   "title": "Evacuation routes computed on the building graph",
+   "detail": "Hazard zones: C3, R103, R107. Exclusion: C2, C3, GYM, R103, R106, R107.",
+   "reason": "Every candidate route is checked twice: graph constraints, then camera-verified operational safety.",
+   "tool": {
+    "name": "decision.compute_routes",
+    "args": {
+     "exclusion": "region + 1 hop"
+    },
+    "duration_ms": 1.2,
+    "result": "8 spaces outside exclusion; 8 mathematically valid; 8 operationally verified"
+   },
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 25,
+   "t": 38.45,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Recommended procedure: LOCKDOWN_PLUS_EVACUATE",
+   "detail": "Lockdown spaces in/near the probable threat region; evacuate distant spaces via verified routes.",
+   "reason": "threat localised (region mass >= 0.70): pass (region ['C3', 'R107', 'R103'] mass 0.93); threat corroborated (P >= 0.5): pass (P(threat)=0.93); at least one operationally verified route: pass (8 verified-clear route(s))",
+   "tool": {
+    "name": "decision.assess_options",
+    "args": {
+     "rejected": []
+    },
+    "duration_ms": 0.4,
+    "result": "feasible: LOCKDOWN, LOCKDOWN_PLUS_EVACUATE"
+   },
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 26,
+   "t": 38.8,
+   "phase": "DECIDE",
+   "kind": "decision",
+   "title": "Full evacuation not recommended",
+   "detail": "",
+   "reason": "8/12 spaces; 4 inside the exclusion zone",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  },
+  {
+   "step": 27,
+   "t": 39.15,
+   "phase": "REVIEW",
+   "kind": "human",
+   "title": "Human review requested",
+   "detail": "Recommendation LOCKDOWN_PLUS_EVACUATE requires approval by an authorised safety lead. Nothing is executed automatically.",
+   "reason": "Consequential decisions under uncertainty require human control.",
+   "tool": null,
+   "changes": [],
+   "data": {}
+  }
+ ],
+ "cameras": {
+  "CAM-01": {
+   "id": "CAM-01",
+   "zone": "C1",
+   "clip": "normal_a",
+   "status": "analyzed",
+   "activity": "calm",
+   "reliability": 1.0,
+   "analysis_id": "CAM-01-04",
+   "evidence": {
+    "camera_id": "CAM-01",
+    "zone": "C1",
+    "activity": "calm",
+    "reliability": 1.0,
+    "persons": 6.0,
+    "persons_max": 6,
+    "speed_bh_s": 0.71,
+    "flow_speed_bh_s": 0.97,
+    "running_fraction": 0.0,
+    "coherence": 0.32,
+    "flight_heading_deg": null,
+    "source_heading_deg": null,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": true,
+     "speed_ratio": 1.37,
+     "direction_gap_deg": 165.89999999999998,
+     "consistent": true
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-01-04",
+    "activity_label": "Ordinary walking movement"
+   }
+  },
+  "CAM-02": {
+   "id": "CAM-02",
+   "zone": "C2",
+   "clip": "flight_left_a",
+   "status": "analyzed",
+   "activity": "flight",
+   "reliability": 1.0,
+   "analysis_id": "CAM-02-02",
+   "evidence": {
+    "camera_id": "CAM-02",
+    "zone": "C2",
+    "activity": "flight",
+    "reliability": 1.0,
+    "persons": 6.5,
+    "persons_max": 9,
+    "speed_bh_s": 2.83,
+    "flow_speed_bh_s": 3.36,
+    "running_fraction": 1.0,
+    "coherence": 0.93,
+    "flight_heading_deg": 174.5,
+    "source_heading_deg": 354.5,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": true,
+     "speed_ratio": 1.19,
+     "direction_gap_deg": 3.0999999999999943,
+     "consistent": true
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-02-02",
+    "activity_label": "Coherent rapid movement (people running in one direction)"
+   }
+  },
+  "CAM-03": {
+   "id": "CAM-03",
+   "zone": "C3",
+   "clip": "flight_left_b",
+   "status": "analyzed",
+   "activity": "flight",
+   "reliability": 1.0,
+   "analysis_id": "CAM-03-01",
+   "evidence": {
+    "camera_id": "CAM-03",
+    "zone": "C3",
+    "activity": "flight",
+    "reliability": 1.0,
+    "persons": 4.0,
+    "persons_max": 7,
+    "speed_bh_s": 2.71,
+    "flow_speed_bh_s": 3.45,
+    "running_fraction": 0.57,
+    "coherence": 0.97,
+    "flight_heading_deg": 170.1,
+    "source_heading_deg": 350.1,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": true,
+     "speed_ratio": 1.27,
+     "direction_gap_deg": 10.700000000000017,
+     "consistent": true
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-03-01",
+    "activity_label": "Coherent rapid movement (people running in one direction)"
+   }
+  },
+  "CAM-04": {
+   "id": "CAM-04",
+   "zone": "C4",
+   "clip": "normal_d",
+   "status": "analyzed",
+   "activity": "calm",
+   "reliability": 1.0,
+   "analysis_id": "CAM-04-05",
+   "evidence": {
+    "camera_id": "CAM-04",
+    "zone": "C4",
+    "activity": "calm",
+    "reliability": 1.0,
+    "persons": 3.0,
+    "persons_max": 4,
+    "speed_bh_s": 0.85,
+    "flow_speed_bh_s": 0.96,
+    "running_fraction": 0.0,
+    "coherence": 0.6,
+    "flight_heading_deg": null,
+    "source_heading_deg": null,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": true,
+     "speed_ratio": 1.13,
+     "direction_gap_deg": 1.099999999999966,
+     "consistent": true
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-04-05",
+    "activity_label": "Ordinary walking movement"
+   }
+  },
+  "CAM-05": {
+   "id": "CAM-05",
+   "zone": "LOBBY",
+   "clip": "empty_a",
+   "status": "analyzed",
+   "activity": "empty",
+   "reliability": 1.0,
+   "analysis_id": "CAM-05-03",
+   "evidence": {
+    "camera_id": "CAM-05",
+    "zone": "LOBBY",
+    "activity": "empty",
+    "reliability": 1.0,
+    "persons": 0.0,
+    "persons_max": 0,
+    "speed_bh_s": null,
+    "flow_speed_bh_s": null,
+    "running_fraction": 0.0,
+    "coherence": 0.0,
+    "flight_heading_deg": null,
+    "source_heading_deg": null,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": false
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-05-03",
+    "activity_label": "No people detected"
+   }
+  },
+  "CAM-06": {
+   "id": "CAM-06",
+   "zone": "CAF",
+   "clip": "normal_c",
+   "status": "analyzed",
+   "activity": "calm",
+   "reliability": 1.0,
+   "analysis_id": "CAM-06-06",
+   "evidence": {
+    "camera_id": "CAM-06",
+    "zone": "CAF",
+    "activity": "calm",
+    "reliability": 1.0,
+    "persons": 6.0,
+    "persons_max": 7,
+    "speed_bh_s": 1.0,
+    "flow_speed_bh_s": 1.15,
+    "running_fraction": 0.12,
+    "coherence": 0.24,
+    "flight_heading_deg": null,
+    "source_heading_deg": null,
+    "weapon_like": [],
+    "issues": [],
+    "consistency": {
+     "checked": true,
+     "speed_ratio": 1.15,
+     "direction_gap_deg": 5.700000000000017,
+     "consistent": true
+    },
+    "enhanced": false,
+    "analysis_id": "CAM-06-06",
+    "activity_label": "Ordinary walking movement"
+   }
+  },
+  "CAM-07": {
+   "id": "CAM-07",
+   "zone": "GYM",
+   "clip": "flight_left_a",
+   "status": "idle",
+   "activity": null,
+   "reliability": null,
+   "analysis_id": null
+  }
+ },
+ "zones": {
+  "C1": {
+   "id": "C1",
+   "observed": "calm",
+   "p_threat": 0.0006,
+   "persons": 6.0,
+   "last_camera": "CAM-01",
+   "status": "normal"
+  },
+  "C2": {
+   "id": "C2",
+   "observed": "people fleeing",
+   "p_threat": 0.008,
+   "persons": 6.5,
+   "last_camera": "CAM-02",
+   "status": "alert"
+  },
+  "C3": {
+   "id": "C3",
+   "observed": "people fleeing",
+   "p_threat": 0.7139,
+   "persons": 4.0,
+   "last_camera": "CAM-03",
+   "status": "alert"
+  },
+  "C4": {
+   "id": "C4",
+   "observed": "calm",
+   "p_threat": 0.0011,
+   "persons": 3.0,
+   "last_camera": "CAM-04",
+   "status": "normal"
+  },
+  "R101": {
+   "id": "R101",
+   "observed": "unobserved",
+   "p_threat": 0.0014,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "R102": {
+   "id": "R102",
+   "observed": "unobserved",
+   "p_threat": 0.0014,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "LIB": {
+   "id": "LIB",
+   "observed": "unobserved",
+   "p_threat": 0.0014,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "GYM": {
+   "id": "GYM",
+   "observed": "unobserved",
+   "p_threat": 0.0172,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "R103": {
+   "id": "R103",
+   "observed": "unobserved",
+   "p_threat": 0.048,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "R104": {
+   "id": "R104",
+   "observed": "unobserved",
+   "p_threat": 0.0014,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "R105": {
+   "id": "R105",
+   "observed": "unobserved",
+   "p_threat": 0.0014,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "LOBBY": {
+   "id": "LOBBY",
+   "observed": "clear (empty)",
+   "p_threat": 0.0009,
+   "persons": 0.0,
+   "last_camera": "CAM-05",
+   "status": "normal"
+  },
+  "ADMIN": {
+   "id": "ADMIN",
+   "observed": "unobserved",
+   "p_threat": 0.0036,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "CAF": {
+   "id": "CAF",
+   "observed": "calm",
+   "p_threat": 0.003,
+   "persons": 6.0,
+   "last_camera": "CAM-06",
+   "status": "normal"
+  },
+  "R106": {
+   "id": "R106",
+   "observed": "unobserved",
+   "p_threat": 0.0262,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  },
+  "R107": {
+   "id": "R107",
+   "observed": "unobserved",
+   "p_threat": 0.1048,
+   "persons": null,
+   "last_camera": null,
+   "status": "normal"
+  }
+ },
+ "belief": {
+  "p_threat": 0.934,
+  "p_none": 0.066,
+  "zones": {
+   "C1": 0.0006,
+   "C2": 0.008,
+   "C3": 0.7139,
+   "C4": 0.0011,
+   "R101": 0.0014,
+   "R102": 0.0014,
+   "LIB": 0.0014,
+   "GYM": 0.0172,
+   "R103": 0.048,
+   "R104": 0.0014,
+   "R105": 0.0014,
+   "LOBBY": 0.0009,
+   "ADMIN": 0.0036,
+   "CAF": 0.003,
+   "R106": 0.0262,
+   "R107": 0.1048
+  },
+  "conditional": {
+   "C1": 0.0006,
+   "C2": 0.0085,
+   "C3": 0.764,
+   "C4": 0.0012,
+   "R101": 0.0015,
+   "R102": 0.0015,
+   "LIB": 0.0015,
+   "GYM": 0.0184,
+   "R103": 0.0514,
+   "R104": 0.0015,
+   "R105": 0.0015,
+   "LOBBY": 0.001,
+   "ADMIN": 0.0038,
+   "CAF": 0.0032,
+   "R106": 0.0281,
+   "R107": 0.1121
+  },
+  "region": [
+   "C3",
+   "R107",
+   "R103"
+  ],
+  "region_mass": 0.928,
+  "localized": true,
+  "entropy": 0.334,
+  "supporting_observations": 2
+ },
+ "belief_history": [
+  {
+   "step": 2,
+   "p_threat": 0.5,
+   "region_mass": 0.74,
+   "entropy": 0.712
+  },
+  {
+   "step": 5,
+   "p_threat": 0.856,
+   "region_mass": 0.847,
+   "entropy": 0.484
+  },
+  {
+   "step": 9,
+   "p_threat": 0.97,
+   "region_mass": 0.848,
+   "entropy": 0.38
+  },
+  {
+   "step": 12,
+   "p_threat": 0.97,
+   "region_mass": 0.849,
+   "entropy": 0.378
+  },
+  {
+   "step": 15,
+   "p_threat": 0.961,
+   "region_mass": 0.906,
+   "entropy": 0.366
+  },
+  {
+   "step": 18,
+   "p_threat": 0.949,
+   "region_mass": 0.918,
+   "entropy": 0.349
+  },
+  {
+   "step": 21,
+   "p_threat": 0.934,
+   "region_mass": 0.928,
+   "entropy": 0.334
+  },
+  {
+   "step": 23,
+   "p_threat": 0.934,
+   "region_mass": 0.928,
+   "entropy": 0.334
+  }
+ ],
+ "routing": {
+  "hazard_zones": [
+   "C3",
+   "R103",
+   "R107"
+  ],
+  "exclusion_zones": [
+   "C2",
+   "C3",
+   "GYM",
+   "R103",
+   "R106",
+   "R107"
+  ],
+  "blocked_exits": [
+   "EX-E",
+   "EX-GYM"
+  ],
+  "lockdown_spaces": [
+   "GYM",
+   "R103",
+   "R106",
+   "R107"
+  ],
+  "routes": [
+   {
+    "id": "R101->EX-W",
+    "from": "R101",
+    "exit": "EX-W",
+    "path": [
+     "R101",
+     "C1",
+     "EX-W"
+    ],
+    "length_m": 31.5,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "C1"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "R102->EX-W",
+    "from": "R102",
+    "exit": "EX-W",
+    "path": [
+     "R102",
+     "C1",
+     "EX-W"
+    ],
+    "length_m": 30.6,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "C1"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "LIB->EX-N",
+    "from": "LIB",
+    "exit": "EX-N",
+    "path": [
+     "LIB",
+     "C4",
+     "EX-N"
+    ],
+    "length_m": 20.5,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.009,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "C4"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "R104->EX-W",
+    "from": "R104",
+    "exit": "EX-W",
+    "path": [
+     "R104",
+     "C1",
+     "EX-W"
+    ],
+    "length_m": 31.5,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "C1"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "R105->EX-W",
+    "from": "R105",
+    "exit": "EX-W",
+    "path": [
+     "R105",
+     "C1",
+     "EX-W"
+    ],
+    "length_m": 30.6,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "C1"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "LOBBY->EX-S",
+    "from": "LOBBY",
+    "exit": "EX-S",
+    "path": [
+     "LOBBY",
+     "EX-S"
+    ],
+    "length_m": 8.0,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "ADMIN->EX-S",
+    "from": "ADMIN",
+    "exit": "EX-S",
+    "path": [
+     "ADMIN",
+     "LOBBY",
+     "EX-S"
+    ],
+    "length_m": 15.0,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [
+      "LOBBY"
+     ],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   },
+   {
+    "id": "CAF->EX-CAF",
+    "from": "CAF",
+    "exit": "EX-CAF",
+    "path": [
+     "CAF",
+     "EX-CAF"
+    ],
+    "length_m": 8.0,
+    "math_valid": true,
+    "math_checks": {
+     "connected": true,
+     "avoids_exclusion_zone": true,
+     "door_widths_ok": true,
+     "travel_distance_ok": true
+    },
+    "operational": {
+     "hazard_exposure": 0.004,
+     "verified_fraction": 1.0,
+     "verified_zones": [],
+     "unverified_zones": [],
+     "congested_zones": [],
+     "faulted_zones": []
+    },
+    "operational_status": "verified_clear",
+    "safe": true,
+    "alternatives": []
+   }
+  ]
+ },
+ "assessment": {
+  "options": [
+   {
+    "id": "HOLD",
+    "description": "Hold in rooms; keep hallways clear while the situation is verified.",
+    "preconditions": [
+     {
+      "check": "threat probability below hold threshold",
+      "pass": false,
+      "detail": "P(threat)=0.93, threshold 0.15"
+     }
+    ],
+    "feasible": false,
+    "rejected_by_reviewer": false,
+    "score": 0.0,
+    "raw_score": -0.034,
+    "actions": [
+     "Hold in classrooms; keep hallways clear",
+     "Dispatch SRO/administrator to verify the report in person",
+     "Re-assess on any new evidence"
+    ],
+    "risks": [
+     "If the report is true and visual coverage missed it, people remain in rooms (lower exposure than hallways)."
+    ],
+    "spaces": {},
+    "routes": [],
+    "requires_human_approval": true
+   },
+   {
+    "id": "SECURE",
+    "description": "Secure the perimeter; bring people inside (hazard outside the building).",
+    "preconditions": [
+     {
+      "check": "hazard assessed outside the building",
+      "pass": false,
+      "detail": "No evidence places the hazard outside; exterior cameras are not modelled"
+     }
+    ],
+    "feasible": false,
+    "rejected_by_reviewer": false,
+    "score": 0.0,
+    "raw_score": 0.2,
+    "actions": [
+     "Lock exterior doors; bring people inside"
+    ],
+    "risks": [
+     "Not applicable to an interior threat"
+    ],
+    "spaces": {},
+    "routes": [],
+    "requires_human_approval": true
+   },
+   {
+    "id": "LOCKDOWN",
+    "description": "Lock doors, lights off, out of sight; building-wide.",
+    "preconditions": [
+     {
+      "check": "threat probability at or above hold threshold",
+      "pass": true,
+      "detail": "P(threat)=0.93"
+     }
+    ],
+    "feasible": true,
+    "rejected_by_reviewer": false,
+    "score": 0.6,
+    "raw_score": 0.6,
+    "actions": [
+     "Lock and barricade doors in all spaces; lights off; out of sight",
+     "Clear hallways",
+     "Law enforcement handles movement of occupants"
+    ],
+    "risks": [
+     "Occupants near the threat cannot move away",
+     "Does not use verified-clear routes that may exist"
+    ],
+    "spaces": {
+     "lockdown": [
+      "R101",
+      "R102",
+      "LIB",
+      "GYM",
+      "R103",
+      "R104",
+      "R105",
+      "LOBBY",
+      "ADMIN",
+      "CAF",
+      "R106",
+      "R107"
+     ]
+    },
+    "routes": [],
+    "requires_human_approval": true
+   },
+   {
+    "id": "LOCKDOWN_PLUS_EVACUATE",
+    "description": "Lockdown spaces in/near the probable threat region; evacuate distant spaces via verified routes.",
+    "preconditions": [
+     {
+      "check": "threat localised (region mass >= 0.70)",
+      "pass": true,
+      "detail": "region ['C3', 'R107', 'R103'] mass 0.93"
+     },
+     {
+      "check": "threat corroborated (P >= 0.5)",
+      "pass": true,
+      "detail": "P(threat)=0.93"
+     },
+     {
+      "check": "at least one operationally verified route",
+      "pass": true,
+      "detail": "8 verified-clear route(s)"
+     }
+    ],
+    "feasible": true,
+    "rejected_by_reviewer": false,
+    "score": 0.95,
+    "raw_score": 0.95,
+    "actions": [
+     "Lockdown: GYM, R103, R106, R107",
+     "Evacuate R101 via C1 > EX-W",
+     "Evacuate R102 via C1 > EX-W",
+     "Evacuate LIB via C4 > EX-N",
+     "Evacuate R104 via C1 > EX-W",
+     "Evacuate R105 via C1 > EX-W",
+     "Evacuate LOBBY via EX-S",
+     "Evacuate ADMIN via LOBBY > EX-S",
+     "Evacuate CAF via EX-CAF"
+    ],
+    "risks": [
+     "Belief could be wrong: evacuees could move toward an unobserved second threat",
+     "Routes are verified only by cameras at the time of analysis; conditions change"
+    ],
+    "spaces": {
+     "lockdown": [
+      "GYM",
+      "R103",
+      "R106",
+      "R107"
+     ],
+     "evacuate": [
+      "R101",
+      "R102",
+      "LIB",
+      "R104",
+      "R105",
+      "LOBBY",
+      "ADMIN",
+      "CAF"
+     ],
+     "hold": []
+    },
+    "routes": [
+     "R101->EX-W",
+     "R102->EX-W",
+     "LIB->EX-N",
+     "R104->EX-W",
+     "R105->EX-W",
+     "LOBBY->EX-S",
+     "ADMIN->EX-S",
+     "CAF->EX-CAF"
+    ],
+    "requires_human_approval": true
+   },
+   {
+    "id": "EVACUATE",
+    "description": "Evacuate the whole building via assigned routes.",
+    "preconditions": [
+     {
+      "check": "threat localised",
+      "pass": true,
+      "detail": "region mass 0.93"
+     },
+     {
+      "check": "every occupied space has a verified route",
+      "pass": false,
+      "detail": "8/12 spaces; 4 inside the exclusion zone"
+     }
+    ],
+    "feasible": false,
+    "rejected_by_reviewer": false,
+    "score": 0.0,
+    "raw_score": 0.7,
+    "actions": [
+     "Evacuate all spaces via assigned routes"
+    ],
+    "risks": [
+     "Moves people through hallways during an active threat"
+    ],
+    "spaces": {
+     "evacuate": [
+      "R101",
+      "R102",
+      "LIB",
+      "GYM",
+      "R103",
+      "R104",
+      "R105",
+      "LOBBY",
+      "ADMIN",
+      "CAF",
+      "R106",
+      "R107"
+     ]
+    },
+    "routes": [],
+    "requires_human_approval": true
+   },
+   {
+    "id": "SHELTER",
+    "description": "Shelter for a specific hazard (weather, hazmat).",
+    "preconditions": [
+     {
+      "check": "hazard is weather/hazmat",
+      "pass": false,
+      "detail": "Not applicable to an active-threat scenario"
+     }
+    ],
+    "feasible": false,
+    "rejected_by_reviewer": false,
+    "score": 0.0,
+    "raw_score": 0.1,
+    "actions": [
+     "Shelter for the specific hazard"
+    ],
+    "risks": [
+     "Wrong procedure for this hazard type"
+    ],
+    "spaces": {},
+    "routes": [],
+    "requires_human_approval": true
+   }
+  ],
+  "recommended": "LOCKDOWN_PLUS_EVACUATE",
+  "uncertainty": [
+   "P(active threat) = 0.93 (P(no threat) = 0.07).",
+   "Location: region C3, R107, R103 holds 93% of the conditional probability; normalised entropy 0.33.",
+   "Route validity is a graph property; operational safety additionally requires recent, reliable camera verification."
+  ],
+  "why_not_full_evacuation": [
+   "8/12 spaces; 4 inside the exclusion zone"
+  ]
+ },
+ "review": {
+  "requested_at": 1792915400.5986786,
+  "recommended": "LOCKDOWN_PLUS_EVACUATE",
+  "uncertainty": [
+   "P(active threat) = 0.93 (P(no threat) = 0.07).",
+   "Location: region C3, R107, R103 holds 93% of the conditional probability; normalised entropy 0.33.",
+   "Route validity is a graph property; operational safety additionally requires recent, reliable camera verification."
+  ],
+  "gaps": [],
+  "verification_tasks": [],
+  "allowed_actions": [
+   "approve",
+   "reject",
+   "more_evidence",
+   "block_exit"
+  ]
+ },
+ "review_history": [],
+ "analyses": {
+  "CAM-03-01": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 118.817,
+    "contrast": 52.359,
+    "sharpness": 631.925,
+    "haze": 0.242,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 4.0,
+    "count_max": 7,
+    "mean_score": 0.854,
+    "median_height_px": 74.0,
+    "tracks": 7
+   },
+   "motion": {
+    "fg_ratio": 0.0127,
+    "speed_bh_s_median": 2.71,
+    "speed_bh_s_flow": 3.45,
+    "running_fraction": 0.57,
+    "direction_image_deg": 170.1,
+    "flow_direction_image_deg": 180.8,
+    "coherence": 0.97,
+    "track_vectors": [
+     [
+      -105.8,
+      -40.0,
+      88.0
+     ],
+     [
+      -84.6,
+      -63.3,
+      82.0
+     ]
+    ]
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 89.5,
+    "quality_ms": 276.5,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 93.2,
+    "flow_ms": 1114.8,
+    "detect_ms": 2928.1,
+    "encode_ms": 111.3,
+    "total_ms": 4707.2
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [
+      {
+       "cls": "person",
+       "score": 0.906,
+       "box": [
+        345,
+        247,
+        42,
+        102
+       ],
+       "source": "yolox_s_coco",
+       "track": 1
+      },
+      {
+       "cls": "person",
+       "score": 0.887,
+       "box": [
+        402,
+        264,
+        38,
+        107
+       ],
+       "source": "yolox_s_coco",
+       "track": 2
+      },
+      {
+       "cls": "person",
+       "score": 0.801,
+       "box": [
+        379,
+        174,
+        26,
+        65
+       ],
+       "source": "yolox_s_coco",
+       "track": 3
+      },
+      {
+       "cls": "person",
+       "score": 0.776,
+       "box": [
+        744,
+        157,
+        22,
+        70
+       ],
+       "source": "yolox_s_coco",
+       "track": 4
+      }
+     ],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0417
+    }
+   ],
+   "analysis_id": "CAM-03-01",
+   "camera_id": "CAM-03",
+   "clip_id": "flight_left_b",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-03-01/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-03-01/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 4707.6
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  },
+  "CAM-02-02": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 118.709,
+    "contrast": 52.461,
+    "sharpness": 664.746,
+    "haze": 0.242,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 6.5,
+    "count_max": 9,
+    "mean_score": 0.841,
+    "median_height_px": 78.0,
+    "tracks": 10
+   },
+   "motion": {
+    "fg_ratio": 0.0188,
+    "speed_bh_s_median": 2.83,
+    "speed_bh_s_flow": 3.36,
+    "running_fraction": 1.0,
+    "direction_image_deg": 174.5,
+    "flow_direction_image_deg": 177.6,
+    "coherence": 0.93,
+    "track_vectors": [
+     [
+      -203.8,
+      -57.5,
+      78.0
+     ],
+     [
+      -164.1,
+      15.7,
+      78.0
+     ]
+    ]
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 87.8,
+    "quality_ms": 275.6,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 89.5,
+    "flow_ms": 1069.2,
+    "detect_ms": 2863.8,
+    "encode_ms": 114.5,
+    "total_ms": 4503.1
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [
+      {
+       "cls": "person",
+       "score": 0.877,
+       "box": [
+        709,
+        300,
+        32,
+        116
+       ],
+       "source": "yolox_s_coco",
+       "track": 1
+      },
+      {
+       "cls": "person",
+       "score": 0.874,
+       "box": [
+        519,
+        153,
+        34,
+        70
+       ],
+       "source": "yolox_s_coco",
+       "track": 2
+      },
+      {
+       "cls": "person",
+       "score": 0.865,
+       "box": [
+        599,
+        284,
+        39,
+        107
+       ],
+       "source": "yolox_s_coco",
+       "track": 3
+      },
+      {
+       "cls": "person",
+       "score": 0.851,
+       "box": [
+        615,
+        202,
+        38,
+        83
+       ],
+       "source": "yolox_s_coco",
+       "track": 4
+      },
+      {
+       "cls": "person",
+       "score": 0.846,
+       "box": [
+        596,
+        160,
+        30,
+        69
+       ],
+       "source": "yolox_s_coco",
+       "track": 5
+      },
+      {
+       "cls": "person",
+       "score": 0.842,
+       "box": [
+        393,
+        142,
+        26,
+        76
+       ],
+       "source": "yolox_s_coco",
+       "track": 6
+      },
+      {
+       "cls": "person",
+       "score": 0.812,
+       "box": [
+        718,
+        214,
+        34,
+        89
+       ],
+       "source": "yolox_s_coco",
+       "track": 7
+      },
+      {
+       "cls": "person",
+       "score": 0.586,
+       "box": [
+        711,
+        188,
+        27,
+        45
+       ],
+       "source": "yolox_s_coco",
+       "track": 8
+      }
+     ],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0625
+    }
+   ],
+   "analysis_id": "CAM-02-02",
+   "camera_id": "CAM-02",
+   "clip_id": "flight_left_a",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-02-02/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-02-02/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 4503.6
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  },
+  "CAM-05-03": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 120.361,
+    "contrast": 51.882,
+    "sharpness": 593.423,
+    "haze": 0.256,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 0.0,
+    "count_max": 0,
+    "mean_score": null,
+    "median_height_px": null,
+    "tracks": 0
+   },
+   "motion": {
+    "fg_ratio": 0.0,
+    "speed_bh_s_median": null,
+    "speed_bh_s_flow": null,
+    "running_fraction": 0.0,
+    "direction_image_deg": null,
+    "flow_direction_image_deg": null,
+    "coherence": 0.0,
+    "track_vectors": []
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 87.1,
+    "quality_ms": 285.7,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 81.7,
+    "flow_ms": 1088.1,
+    "detect_ms": 3299.6,
+    "encode_ms": 117.5,
+    "total_ms": 4962.5
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0
+    }
+   ],
+   "analysis_id": "CAM-05-03",
+   "camera_id": "CAM-05",
+   "clip_id": "empty_a",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-05-03/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-05-03/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 4962.8
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  },
+  "CAM-01-04": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 118.408,
+    "contrast": 52.551,
+    "sharpness": 648.289,
+    "haze": 0.241,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 6.0,
+    "count_max": 6,
+    "mean_score": 0.852,
+    "median_height_px": 71.0,
+    "tracks": 6
+   },
+   "motion": {
+    "fg_ratio": 0.0164,
+    "speed_bh_s_median": 0.71,
+    "speed_bh_s_flow": 0.97,
+    "running_fraction": 0.0,
+    "direction_image_deg": 170.1,
+    "flow_direction_image_deg": 4.2,
+    "coherence": 0.32,
+    "track_vectors": [
+     [
+      72.6,
+      -0.6,
+      81.5
+     ],
+     [
+      61.5,
+      -1.1,
+      70.0
+     ]
+    ]
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 85.3,
+    "quality_ms": 265.7,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 87.6,
+    "flow_ms": 1074.7,
+    "detect_ms": 3443.8,
+    "encode_ms": 116.6,
+    "total_ms": 5076.3
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [
+      {
+       "cls": "person",
+       "score": 0.889,
+       "box": [
+        100,
+        188,
+        30,
+        80
+       ],
+       "source": "yolox_s_coco",
+       "track": 1
+      },
+      {
+       "cls": "person",
+       "score": 0.87,
+       "box": [
+        247,
+        190,
+        25,
+        70
+       ],
+       "source": "yolox_s_coco",
+       "track": 2
+      },
+      {
+       "cls": "person",
+       "score": 0.87,
+       "box": [
+        684,
+        186,
+        26,
+        71
+       ],
+       "source": "yolox_s_coco",
+       "track": 3
+      },
+      {
+       "cls": "person",
+       "score": 0.838,
+       "box": [
+        471,
+        135,
+        29,
+        67
+       ],
+       "source": "yolox_s_coco",
+       "track": 4
+      },
+      {
+       "cls": "person",
+       "score": 0.837,
+       "box": [
+        252,
+        122,
+        22,
+        71
+       ],
+       "source": "yolox_s_coco",
+       "track": 5
+      }
+     ],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0185
+    }
+   ],
+   "analysis_id": "CAM-01-04",
+   "camera_id": "CAM-01",
+   "clip_id": "normal_a",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-01-04/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-01-04/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 5076.6
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  },
+  "CAM-04-05": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 110.88,
+    "contrast": 44.389,
+    "sharpness": 467.255,
+    "haze": 0.225,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 3.0,
+    "count_max": 4,
+    "mean_score": 0.857,
+    "median_height_px": 81.0,
+    "tracks": 5
+   },
+   "motion": {
+    "fg_ratio": 0.0087,
+    "speed_bh_s_median": 0.85,
+    "speed_bh_s_flow": 0.96,
+    "running_fraction": 0.0,
+    "direction_image_deg": 0.7,
+    "flow_direction_image_deg": 359.6,
+    "coherence": 0.6,
+    "track_vectors": [
+     [
+      55.8,
+      3.3,
+      69.5
+     ],
+     [
+      92.5,
+      -1.9,
+      81.0
+     ]
+    ]
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 86.6,
+    "quality_ms": 281.0,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 99.0,
+    "flow_ms": 1091.4,
+    "detect_ms": 3637.2,
+    "encode_ms": 130.6,
+    "total_ms": 5329.0
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [
+      {
+       "cls": "person",
+       "score": 0.871,
+       "box": [
+        679,
+        162,
+        30,
+        69
+       ],
+       "source": "yolox_s_coco",
+       "track": 1
+      },
+      {
+       "cls": "person",
+       "score": 0.868,
+       "box": [
+        111,
+        212,
+        40,
+        82
+       ],
+       "source": "yolox_s_coco",
+       "track": 2
+      },
+      {
+       "cls": "person",
+       "score": 0.833,
+       "box": [
+        298,
+        187,
+        29,
+        86
+       ],
+       "source": "yolox_s_coco",
+       "track": 3
+      },
+      {
+       "cls": "person",
+       "score": 0.727,
+       "box": [
+        0,
+        163,
+        19,
+        68
+       ],
+       "source": "yolox_s_coco",
+       "track": 4
+      }
+     ],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0147
+    }
+   ],
+   "analysis_id": "CAM-04-05",
+   "camera_id": "CAM-04",
+   "clip_id": "normal_d",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-04-05/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-04-05/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 5329.3
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  },
+  "CAM-06-06": {
+   "frames_analyzed": 40,
+   "fps": 10.0,
+   "frame_size": [
+    768,
+    576
+   ],
+   "preview_width": 480,
+   "params": {
+    "enhance": "none",
+    "detect_every": 4,
+    "conf": 0.35
+   },
+   "quality": {
+    "brightness": 108.642,
+    "contrast": 45.186,
+    "sharpness": 506.776,
+    "haze": 0.244,
+    "frozen_ratio": 0.0,
+    "obstructed_ratio": 0.0,
+    "issues": [],
+    "reliability": 1.0
+   },
+   "persons": {
+    "count_median": 6.0,
+    "count_max": 7,
+    "mean_score": 0.856,
+    "median_height_px": 84.0,
+    "tracks": 8
+   },
+   "motion": {
+    "fg_ratio": 0.0228,
+    "speed_bh_s_median": 1.0,
+    "speed_bh_s_flow": 1.15,
+    "running_fraction": 0.12,
+    "direction_image_deg": 177.7,
+    "flow_direction_image_deg": 183.4,
+    "coherence": 0.24,
+    "track_vectors": [
+     [
+      -73.9,
+      -1.1,
+      82.0
+     ],
+     [
+      -129.4,
+      -0.8,
+      116.0
+     ]
+    ]
+   },
+   "weapon_like": [],
+   "weapon_model": null,
+   "detector": {
+    "model": "yolox_s_coco",
+    "file": "yolox_s_2022nov.onnx",
+    "inferences": 10
+   },
+   "timings": {
+    "decode_ms": 91.4,
+    "quality_ms": 284.9,
+    "enhance_ms": 0.1,
+    "bgsub_ms": 95.3,
+    "flow_ms": 1095.7,
+    "detect_ms": 3728.9,
+    "encode_ms": 127.1,
+    "total_ms": 5426.7
+   },
+   "per_frame": [
+    {
+     "index": 0,
+     "detections": [
+      {
+       "cls": "person",
+       "score": 0.888,
+       "box": [
+        355,
+        196,
+        37,
+        82
+       ],
+       "source": "yolox_s_coco",
+       "track": 1
+      },
+      {
+       "cls": "person",
+       "score": 0.885,
+       "box": [
+        469,
+        298,
+        34,
+        116
+       ],
+       "source": "yolox_s_coco",
+       "track": 2
+      },
+      {
+       "cls": "person",
+       "score": 0.884,
+       "box": [
+        603,
+        213,
+        42,
+        82
+       ],
+       "source": "yolox_s_coco",
+       "track": 3
+      },
+      {
+       "cls": "person",
+       "score": 0.878,
+       "box": [
+        519,
+        209,
+        45,
+        81
+       ],
+       "source": "yolox_s_coco",
+       "track": 4
+      },
+      {
+       "cls": "person",
+       "score": 0.864,
+       "box": [
+        238,
+        234,
+        30,
+        87
+       ],
+       "source": "yolox_s_coco",
+       "track": 5
+      },
+      {
+       "cls": "person",
+       "score": 0.827,
+       "box": [
+        683,
+        155,
+        23,
+        78
+       ],
+       "source": "yolox_s_coco",
+       "track": 6
+      }
+     ],
+     "detected": true,
+     "fg_ratio": 1.0
+    },
+    {
+     "index": 1,
+     "detections": [],
+     "detected": false,
+     "fg_ratio": 0.0324
+    }
+   ],
+   "analysis_id": "CAM-06-06",
+   "camera_id": "CAM-06",
+   "clip_id": "normal_c",
+   "frame_urls": [
+    "/media/runs/20261025-080241-7a2864/CAM-06-06/f000.jpg",
+    "/media/runs/20261025-080241-7a2864/CAM-06-06/f001.jpg"
+   ],
+   "service": {
+    "machine": "x86_64",
+    "arm64": false,
+    "on_aws": false,
+    "instance_type": null,
+    "opencv_version": "5.0.0",
+    "cool": "not_in_use",
+    "wall_ms": 5427.0
+   },
+   "synthetic": true,
+   "footage_source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited"
+  }
+ },
+ "gaps": [],
+ "verification_tasks": [],
+ "action_log": [],
+ "metrics": {
+  "vision_calls": 6,
+  "vision_ms": 30004.8,
+  "reanalyses": 0,
+  "faults": 0
+ },
+ "error": null
+}

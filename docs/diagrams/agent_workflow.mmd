@@ -1,0 +1,23 @@
+flowchart TD
+  T["Simulated trigger<br/>(tip-line / 911 relay / radio)"] --> P0["Prior belief over zones + NONE<br/>report = weak evidence"]
+  V0["Validate digital twin<br/>(geometry, connectivity, egress constraints)"] --> P0
+  P0 --> PLAN{"PLAN: pick next camera<br/>max expected information<br/>phase: localise → corroborate → verify routes"}
+  PLAN -- "tool: vision.analyze_camera" --> CV["PERCEIVE (OpenCV 5)<br/>quality · MOG2 · Farneback · YOLOX · tracks"]
+  CV --> Q{"VALIDATE measurement"}
+  Q -- "frozen / obstructed" --> F["ACT: mark camera FAULT<br/>zone = coverage gap<br/>verification task"]
+  Q -- "haze" --> R1["re-run tool with dehaze + CLAHE"]
+  Q -- "track vs flow disagree" --> R2["re-run with denser detection"]
+  Q -- "weapon-like COCO object" --> R3["persistence check (every 2nd frame)<br/>→ human verification task"]
+  R1 & R2 & R3 --> M["Merge: consistent ⇒ trust ↑<br/>contradictory ⇒ trust ↓"]
+  Q -- "ok" --> U
+  M --> U["UPDATE belief (tempered likelihood)<br/>+ twin zone states"]
+  F --> PLAN
+  U --> S{"Stop?<br/>not corroborated · localised & routes checked ·<br/>budget · no more info"}
+  S -- no --> PLAN
+  S -- yes --> RT["ACT: compute routes on graph<br/>math validity ≠ operational safety"]
+  RT --> OPT["DECIDE: evaluate SRP procedures<br/>HOLD · SECURE · LOCKDOWN · LOCKDOWN+EVACUATE · EVACUATE · SHELTER"]
+  OPT --> HR{{"HUMAN REVIEW (required)"}}
+  HR -- approve --> LOG["Simulated action log<br/>no real alerts"]
+  HR -- reject option --> OPT
+  HR -- "exit blocked" --> RT
+  HR -- "more evidence" --> PLAN

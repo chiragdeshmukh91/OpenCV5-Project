@@ -1,0 +1,27 @@
+[Unit]
+Description=CLEARPATH Vision Service (OpenCV 5 analysis API)
+Documentation=file:///opt/clearpath/deploy/aws/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=clearpath
+Group=clearpath
+WorkingDirectory=/opt/clearpath/backend
+EnvironmentFile=/etc/clearpath/clearpath.env
+# Loopback only: nginx exposes GET /v1/health; /v1/analyze is reachable only from the API on this host.
+# To run the vision workload on its own instance, bind 0.0.0.0, set VISION_API_KEY, and allow :8100 only from
+# the API instance's security group (see README "Splitting vision onto its own instance").
+ExecStart=/opt/clearpath/venv/bin/uvicorn clearpath.vision.service:app --host 127.0.0.1 --port 8100 --workers 1
+Restart=on-failure
+RestartSec=3
+StateDirectory=clearpath
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/clearpath /opt/clearpath/backend/footage
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+[Unit]
+Description=CLEARPATH API (agent orchestrator, digital twin, decision support, built frontend)
+Documentation=file:///opt/clearpath/deploy/aws/README.md
+After=network-online.target clearpath-vision.service
+Wants=network-online.target clearpath-vision.service
+
+[Service]
+Type=simple
+User=clearpath
+Group=clearpath
+WorkingDirectory=/opt/clearpath/backend
+EnvironmentFile=/etc/clearpath/clearpath.env
+# The API never runs OpenCV analysis itself: every camera analysis is an HTTP call to the vision service.
+Environment=VISION_MODE=remote
+Environment=VISION_SERVICE_URL=http://127.0.0.1:8100
+# One worker: agent runs are held in process memory.
+ExecStart=/opt/clearpath/venv/bin/uvicorn clearpath.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=on-failure
+RestartSec=3
+StateDirectory=clearpath
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/clearpath /opt/clearpath/backend/footage
+
+[Install]
+WantedBy=multi-user.target

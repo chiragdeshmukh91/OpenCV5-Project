@@ -1,0 +1,69 @@
+{
+  "name": "Lincoln Ridge Middle School (fictional)",
+  "units": "meters",
+  "notes": "Fictional single-storey school layout used for simulation only. Coordinates: x = east, y = north.",
+  "constraints": {
+    "min_door_width_m": 0.9,
+    "max_travel_distance_m": 61.0,
+    "min_exits_per_occupied_space": 2,
+    "hazard_exclusion_probability": 0.2,
+    "hazard_buffer_hops": 1,
+    "travel_distance_note": "Configurable limit (61 m ~ 200 ft). Value is a configuration input, not a code-compliance claim."
+  },
+  "zones": [
+    {"id": "C1", "name": "West Hall", "kind": "corridor", "polygon": [[0,22],[30,22],[30,28],[0,28]]},
+    {"id": "C2", "name": "Central Hall", "kind": "corridor", "polygon": [[30,22],[60,22],[60,28],[30,28]]},
+    {"id": "C3", "name": "East Hall", "kind": "corridor", "polygon": [[60,22],[90,22],[90,28],[60,28]]},
+    {"id": "C4", "name": "North Wing Hall", "kind": "corridor", "polygon": [[42,28],[48,28],[48,50],[42,50]]},
+
+    {"id": "R101", "name": "Classroom 101", "kind": "classroom", "capacity": 28, "polygon": [[0,28],[14,28],[14,44],[0,44]]},
+    {"id": "R102", "name": "Classroom 102", "kind": "classroom", "capacity": 28, "polygon": [[14,28],[30,28],[30,44],[14,44]]},
+    {"id": "LIB", "name": "Library", "kind": "library", "capacity": 60, "polygon": [[30,28],[42,28],[42,44],[30,44]]},
+    {"id": "GYM", "name": "Gymnasium", "kind": "gym", "capacity": 200, "polygon": [[48,28],[72,28],[72,50],[48,50]]},
+    {"id": "R103", "name": "Classroom 103", "kind": "classroom", "capacity": 28, "polygon": [[72,28],[90,28],[90,44],[72,44]]},
+
+    {"id": "R104", "name": "Classroom 104", "kind": "classroom", "capacity": 28, "polygon": [[0,6],[14,6],[14,22],[0,22]]},
+    {"id": "R105", "name": "Classroom 105", "kind": "classroom", "capacity": 28, "polygon": [[14,6],[30,6],[30,22],[14,22]]},
+    {"id": "LOBBY", "name": "Main Lobby", "kind": "lobby", "capacity": 40, "polygon": [[30,6],[38,6],[38,22],[30,22]]},
+    {"id": "ADMIN", "name": "Admin Office", "kind": "office", "capacity": 12, "polygon": [[38,6],[44,6],[44,22],[38,22]]},
+    {"id": "CAF", "name": "Cafeteria", "kind": "cafeteria", "capacity": 250, "polygon": [[44,6],[64,6],[64,22],[44,22]]},
+    {"id": "R106", "name": "Classroom 106", "kind": "classroom", "capacity": 28, "polygon": [[64,6],[77,6],[77,22],[64,22]]},
+    {"id": "R107", "name": "Classroom 107", "kind": "classroom", "capacity": 28, "polygon": [[77,6],[90,6],[90,22],[77,22]]}
+  ],
+  "exits": [
+    {"id": "EX-W", "name": "West Exit", "zone": "C1", "position": [0,25], "width_m": 1.8},
+    {"id": "EX-E", "name": "East Exit", "zone": "C3", "position": [90,25], "width_m": 1.8},
+    {"id": "EX-N", "name": "North Wing Exit", "zone": "C4", "position": [45,50], "width_m": 1.8},
+    {"id": "EX-S", "name": "Main Entrance", "zone": "LOBBY", "position": [34,6], "width_m": 2.4},
+    {"id": "EX-CAF", "name": "Cafeteria Exit", "zone": "CAF", "position": [54,6], "width_m": 1.8},
+    {"id": "EX-GYM", "name": "Gym Exit", "zone": "GYM", "position": [60,50], "width_m": 2.4}
+  ],
+  "doors": [
+    {"id": "D-C1-C2", "a": "C1", "b": "C2", "position": [30,25], "width_m": 6.0, "kind": "opening"},
+    {"id": "D-C2-C3", "a": "C2", "b": "C3", "position": [60,25], "width_m": 6.0, "kind": "opening"},
+    {"id": "D-C2-C4", "a": "C2", "b": "C4", "position": [45,28], "width_m": 6.0, "kind": "opening"},
+    {"id": "D-R101", "a": "R101", "b": "C1", "position": [7,28], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-R102", "a": "R102", "b": "C1", "position": [22,28], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-LIB", "a": "LIB", "b": "C2", "position": [36,28], "width_m": 1.8, "kind": "lockable"},
+    {"id": "D-LIB-C4", "a": "LIB", "b": "C4", "position": [42,38], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-GYM-C4", "a": "GYM", "b": "C4", "position": [48,40], "width_m": 1.8, "kind": "lockable"},
+    {"id": "D-GYM-C3", "a": "GYM", "b": "C3", "position": [66,28], "width_m": 1.8, "kind": "lockable"},
+    {"id": "D-R103", "a": "R103", "b": "C3", "position": [81,28], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-R104", "a": "R104", "b": "C1", "position": [7,22], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-R105", "a": "R105", "b": "C1", "position": [22,22], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-LOBBY", "a": "LOBBY", "b": "C2", "position": [34,22], "width_m": 2.4, "kind": "opening"},
+    {"id": "D-ADMIN", "a": "ADMIN", "b": "LOBBY", "position": [38,14], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-CAF", "a": "CAF", "b": "C2", "position": [52,22], "width_m": 2.4, "kind": "lockable"},
+    {"id": "D-R106", "a": "R106", "b": "C3", "position": [70,22], "width_m": 0.95, "kind": "lockable"},
+    {"id": "D-R107", "a": "R107", "b": "C3", "position": [83,22], "width_m": 0.95, "kind": "lockable"}
+  ],
+  "cameras": [
+    {"id": "CAM-01", "name": "West Hall", "zone": "C1", "position": [15,25], "covers": ["C1"], "image_right_heading_deg": 0, "yaw_deg": 90},
+    {"id": "CAM-02", "name": "Central Hall", "zone": "C2", "position": [40,25], "covers": ["C2"], "image_right_heading_deg": 0, "yaw_deg": 90},
+    {"id": "CAM-03", "name": "East Hall", "zone": "C3", "position": [75,25], "covers": ["C3"], "image_right_heading_deg": 0, "yaw_deg": 90},
+    {"id": "CAM-04", "name": "North Wing Hall", "zone": "C4", "position": [45,39], "covers": ["C4"], "image_right_heading_deg": 90, "yaw_deg": 180},
+    {"id": "CAM-05", "name": "Main Lobby", "zone": "LOBBY", "position": [34,14], "covers": ["LOBBY"], "image_right_heading_deg": 270, "yaw_deg": 0},
+    {"id": "CAM-06", "name": "Cafeteria", "zone": "CAF", "position": [54,14], "covers": ["CAF"], "image_right_heading_deg": 0, "yaw_deg": 90},
+    {"id": "CAM-07", "name": "Gymnasium", "zone": "GYM", "position": [60,39], "covers": ["GYM"], "image_right_heading_deg": 0, "yaw_deg": 90}
+  ]
+}

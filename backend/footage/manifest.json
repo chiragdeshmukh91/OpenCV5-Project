@@ -1,0 +1,236 @@
+{
+  "sprites": 40,
+  "clips": {
+    "congested_exit": {
+      "file": "congested_exit.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "congested",
+        "people": 14,
+        "tint": [
+          30,
+          60,
+          90
+        ]
+      },
+      "ground_truth": {
+        "behavior": "congested",
+        "people": 14,
+        "direction": null
+      }
+    },
+    "empty_a": {
+      "file": "empty_a.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "empty"
+      },
+      "ground_truth": {
+        "behavior": "empty",
+        "people": 0,
+        "direction": null
+      }
+    },
+    "empty_b": {
+      "file": "empty_b.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "empty",
+        "flip": true,
+        "tint": [
+          60,
+          60,
+          60
+        ]
+      },
+      "ground_truth": {
+        "behavior": "empty",
+        "people": 0,
+        "direction": null
+      }
+    },
+    "flight_left_a": {
+      "file": "flight_left_a.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "flight",
+        "direction": "left",
+        "people": 9
+      },
+      "ground_truth": {
+        "behavior": "flight",
+        "people": 9,
+        "direction": "left"
+      }
+    },
+    "flight_left_b": {
+      "file": "flight_left_b.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "flight",
+        "direction": "left",
+        "people": 7,
+        "flip": true
+      },
+      "ground_truth": {
+        "behavior": "flight",
+        "people": 7,
+        "direction": "left"
+      }
+    },
+    "flight_right_a": {
+      "file": "flight_right_a.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "flight",
+        "direction": "right",
+        "people": 9
+      },
+      "ground_truth": {
+        "behavior": "flight",
+        "people": 9,
+        "direction": "right"
+      }
+    },
+    "flight_right_b": {
+      "file": "flight_right_b.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "flight",
+        "direction": "right",
+        "people": 8,
+        "tint": [
+          90,
+          60,
+          30
+        ]
+      },
+      "ground_truth": {
+        "behavior": "flight",
+        "people": 8,
+        "direction": "right"
+      }
+    },
+    "frozen_normal": {
+      "file": "frozen_normal.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 6,
+        "frozen": true
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 6,
+        "direction": null
+      }
+    },
+    "normal_a": {
+      "file": "normal_a.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 6
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 6,
+        "direction": null
+      }
+    },
+    "normal_b": {
+      "file": "normal_b.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 5,
+        "flip": true
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 5,
+        "direction": null
+      }
+    },
+    "normal_c": {
+      "file": "normal_c.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 7,
+        "tint": [
+          90,
+          60,
+          30
+        ]
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 7,
+        "direction": null
+      }
+    },
+    "normal_d": {
+      "file": "normal_d.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 4,
+        "flip": true,
+        "tint": [
+          30,
+          60,
+          90
+        ]
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 4,
+        "direction": null
+      }
+    },
+    "smoke_normal": {
+      "file": "smoke_normal.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 7,
+        "smoke": 0.95,
+        "flip": true
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 7,
+        "direction": null
+      }
+    },
+    "tampered": {
+      "file": "tampered.avi",
+      "synthetic": true,
+      "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
+      "spec": {
+        "behavior": "normal",
+        "people": 5,
+        "tamper_after": 0.2
+      },
+      "ground_truth": {
+        "behavior": "normal",
+        "people": 5,
+        "direction": null
+      }
+    }
+  }
+}

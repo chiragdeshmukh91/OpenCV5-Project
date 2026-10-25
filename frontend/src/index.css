@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #07090d;
+  color: #dde3ea;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin, quiet scrollbars */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3542 transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #2a3542;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg border border-ink-700/80 bg-ink-900/90;
+  }
+  .panel-header {
+    @apply flex items-center gap-2 border-b border-ink-700/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-300;
+  }
+  .label {
+    @apply text-[10px] font-medium uppercase tracking-[0.08em] text-ink-400;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary {
+    @apply btn border-clear-soft/60 bg-clear-dim text-[#bfeee2] hover:bg-[#1d4a41] hover:border-clear-soft;
+  }
+  .btn-ghost {
+    @apply btn border-ink-600 bg-ink-800 text-ink-200 hover:bg-ink-750 hover:border-ink-500;
+  }
+  .btn-warn {
+    @apply btn border-caution-soft/60 bg-caution-dim text-[#f1d9a8] hover:border-caution-soft;
+  }
+  .btn-danger {
+    @apply btn border-threat-soft/60 bg-threat-dim text-[#f0c4c6] hover:border-threat-soft;
+  }
+  .input {
+    @apply rounded-md border border-ink-600 bg-ink-850 px-2 py-1.5 text-xs text-ink-100 outline-none placeholder:text-ink-400 focus:border-info-soft;
+  }
+  .kv {
+    @apply flex items-baseline justify-between gap-2 text-[11.5px];
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-in {
+  animation: fade-in 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-soft,
+  .fade-in {
+    animation: none;
+  }
+}

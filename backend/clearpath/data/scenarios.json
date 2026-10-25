@@ -1,0 +1,206 @@
+{
+  "_note": "All scenarios are SIMULATED. Footage is synthetic (recomposited OpenCV sample video). Triggers are simulated reports. Nothing here can send a real alert.",
+  "clips": {
+    "normal_a": {
+      "behavior": "normal",
+      "people": 6
+    },
+    "normal_b": {
+      "behavior": "normal",
+      "people": 5,
+      "flip": true
+    },
+    "normal_c": {
+      "behavior": "normal",
+      "people": 7,
+      "tint": [
+        90,
+        60,
+        30
+      ]
+    },
+    "normal_d": {
+      "behavior": "normal",
+      "people": 4,
+      "flip": true,
+      "tint": [
+        30,
+        60,
+        90
+      ]
+    },
+    "empty_a": {
+      "behavior": "empty"
+    },
+    "empty_b": {
+      "behavior": "empty",
+      "flip": true,
+      "tint": [
+        60,
+        60,
+        60
+      ]
+    },
+    "flight_left_a": {
+      "behavior": "flight",
+      "direction": "left",
+      "people": 9
+    },
+    "flight_left_b": {
+      "behavior": "flight",
+      "direction": "left",
+      "people": 7,
+      "flip": true
+    },
+    "flight_right_a": {
+      "behavior": "flight",
+      "direction": "right",
+      "people": 9
+    },
+    "flight_right_b": {
+      "behavior": "flight",
+      "direction": "right",
+      "people": 8,
+      "tint": [
+        90,
+        60,
+        30
+      ]
+    },
+    "congested_exit": {
+      "behavior": "congested",
+      "people": 14,
+      "tint": [
+        30,
+        60,
+        90
+      ]
+    },
+    "tampered": {
+      "behavior": "normal",
+      "people": 5,
+      "tamper_after": 0.2
+    },
+    "frozen_normal": {
+      "behavior": "normal",
+      "people": 6,
+      "frozen": true
+    },
+    "smoke_normal": {
+      "behavior": "normal",
+      "people": 7,
+      "smoke": 0.95,
+      "flip": true
+    }
+  },
+  "scenarios": [
+    {
+      "id": "S1-unverified-report",
+      "title": "Unverified tip-line report, normal activity",
+      "summary": "A simulated anonymous report claims a possible firearm near the Central Hall. Cameras show ordinary movement.",
+      "trigger": {
+        "source": "SIMULATED tip-line report",
+        "claim": "Possible firearm seen near Central Hall",
+        "zone": "C2",
+        "confidence": 0.35
+      },
+      "cameras": {
+        "CAM-01": "normal_a",
+        "CAM-02": "normal_b",
+        "CAM-03": "normal_c",
+        "CAM-04": "normal_d",
+        "CAM-05": "empty_a",
+        "CAM-06": "normal_a",
+        "CAM-07": "empty_b"
+      },
+      "expected": {
+        "primary_option": "HOLD",
+        "threat_region": null
+      }
+    },
+    {
+      "id": "S2-corroborated-east",
+      "title": "Corroborated incident in the east wing",
+      "summary": "A simulated 911 relay reports shots heard near the East Hall. Cameras in the east and centre show people running west.",
+      "trigger": {
+        "source": "SIMULATED 911 relay",
+        "claim": "Possible shots heard near East Hall",
+        "zone": "C3",
+        "confidence": 0.5
+      },
+      "cameras": {
+        "CAM-01": "normal_a",
+        "CAM-02": "flight_left_a",
+        "CAM-03": "flight_left_b",
+        "CAM-04": "normal_d",
+        "CAM-05": "empty_a",
+        "CAM-06": "normal_c",
+        "CAM-07": "flight_left_a"
+      },
+      "expected": {
+        "primary_option": "LOCKDOWN_PLUS_EVACUATE",
+        "threat_region": [
+          "C3",
+          "R103",
+          "R106",
+          "R107",
+          "GYM"
+        ]
+      }
+    },
+    {
+      "id": "S3-degraded-sensing",
+      "title": "Degraded sensing near the North Wing",
+      "summary": "A simulated staff radio call reports a possible weapon near the North Wing. Key cameras are obstructed, smoky or frozen.",
+      "trigger": {
+        "source": "SIMULATED staff radio call",
+        "claim": "Possible weapon near North Wing Hall",
+        "zone": "C4",
+        "confidence": 0.45
+      },
+      "cameras": {
+        "CAM-01": "normal_a",
+        "CAM-02": "frozen_normal",
+        "CAM-03": "normal_c",
+        "CAM-04": "tampered",
+        "CAM-05": "empty_a",
+        "CAM-06": "normal_b",
+        "CAM-07": "smoke_normal"
+      },
+      "expected": {
+        "primary_option": "LOCKDOWN",
+        "threat_region": null
+      }
+    },
+    {
+      "id": "S4-west-threat-congested-exit",
+      "title": "West-wing incident with a congested east exit",
+      "summary": "A simulated 911 relay reports a possible firearm in the West Hall. People flee east; the East Exit is crowded.",
+      "trigger": {
+        "source": "SIMULATED 911 relay",
+        "claim": "Possible firearm in West Hall",
+        "zone": "C1",
+        "confidence": 0.5
+      },
+      "cameras": {
+        "CAM-01": "flight_right_a",
+        "CAM-02": "flight_right_b",
+        "CAM-03": "congested_exit",
+        "CAM-04": "normal_b",
+        "CAM-05": "empty_b",
+        "CAM-06": "empty_a",
+        "CAM-07": "normal_c"
+      },
+      "expected": {
+        "primary_option": "LOCKDOWN_PLUS_EVACUATE",
+        "threat_region": [
+          "C1",
+          "R101",
+          "R102",
+          "R104",
+          "R105"
+        ]
+      }
+    }
+  ]
+}

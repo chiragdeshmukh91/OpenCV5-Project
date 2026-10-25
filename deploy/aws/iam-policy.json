@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ClearpathObjectsInOwnPrefixes",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": [
+        "arn:aws:s3:::__BUCKET__/runs/*",
+        "arn:aws:s3:::__BUCKET__/footage/*",
+        "arn:aws:s3:::__BUCKET__/app/*"
+      ]
+    },
+    {
+      "Sid": "HeadBucketForStatusCheck",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::__BUCKET__"
+    },
+    {
+      "Sid": "MetricsOnlyInClearpathNamespace",
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricData",
+      "Resource": "*",
+      "Condition": { "StringEquals": { "cloudwatch:namespace": "CLEARPATH" } }
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "schema": "clearpath-opencv-bench/1",
+  "label": "stock-x86-dev",
+  "timestamp_utc": "2026-10-25T08:15:42+00:00",
+  "identity": {
+    "opencv_version": "5.0.0",
+    "cv2_file": "/usr/local/lib/python3.13/site-packages/cv2/__init__.py",
+    "build_info_sha256": "70fa761cd0c7ca938d6672ac6ddc3dcc4f6c3fde494410f6a6107c9e6d38ffa2",
+    "build": {
+      "version": "5.0.0",
+      "module_path": "/usr/local/lib/python3.13/site-packages/cv2/__init__.py",
+      "version_control": "5.0.0-dirty",
+      "platform": "Linux 6.8.0-1059-azure x86_64",
+      "compiler": "/opt/rh/gcc-toolset-14/root/usr/bin/c++  (ver 14.2.1)",
+      "cpu_baseline": "SSE SSE2 SSE3",
+      "cpu_dispatched": "SSE4_1 SSE4_2 AVX FP16 AVX2 AVX512_SKX",
+      "parallel_framework": "pthreads",
+      "threads": 2,
+      "build_info_sha_prefix": "70fa761cd0c7ca93"
+    },
+    "opencv_pip_distributions_installed": {
+      "opencv-python": "5.0.0.93",
+      "opencv-python-headless": "5.0.0.93",
+      "opencv-contrib-python": "5.0.0.93"
+    },
+    "cool": {
+      "state": "not_in_use",
+      "marker": null,
+      "note": "Stock OpenCV build in use. COOL integration is modular and benchmarked separately (see benchmarks/)."
+    },
+    "use_optimized": true,
+    "num_threads": 2,
+    "machine": "x86_64",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "numpy": "2.5.3",
+    "cpu_count": 2,
+    "cpu": {
+      "model_name": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+      "arm_implementer": null,
+      "arm_part": null,
+      "arm_core": null,
+      "flags": [
+        "avx",
+        "avx2",
+        "avx512bw",
+        "avx512f",
+        "fma",
+        "sse4_2"
+      ]
+    },
+    "ec2": null,
+    "loadavg_at_start": [
+      0.39892578125,
+      0.8818359375,
+      0.6669921875
+    ]
+  },
+  "protocol": {
+    "repeats": 15,
+    "warmup": 3,
+    "dnn_repeats": 15,
+    "e2e_repeats": 2,
+    "clips": [
+      "normal_a",
+      "flight_left_a",
+      "smoke_normal"
+    ],
+    "input_clip": "normal_a",
+    "input_frames": 16,
+    "input_size": [
+      768,
+      576
+    ],
+    "threads_override": null
+  },
+  "micro": {
+    "resize_down_linear": {
+      "desc": "768x576->384x288 INTER_LINEAR",
+      "median_ms": 0.2376,
+      "p90_ms": 0.3432,
+      "min_ms": 0.185,
+      "mean_ms": 0.2537,
+      "n": 15,
+      "inner_calls_per_sample": 9
+    },
+    "resize_down_area": {
+      "desc": "768x576->384x288 INTER_AREA",
+      "median_ms": 0.2504,
+      "p90_ms": 0.262,
+      "min_ms": 0.2085,
+      "mean_ms": 0.2435,
+      "n": 15,
+      "inner_calls_per_sample": 21
+    },
+    "resize_up_linear": {
+      "desc": "768x576->1920x1440 INTER_LINEAR",
+      "median_ms": 3.5131,
+      "p90_ms": 3.6181,
+      "min_ms": 3.3563,
+      "mean_ms": 3.5102,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "resize_up_area": {
+      "desc": "768x576->1920x1440 INTER_AREA",
+      "median_ms": 3.5253,
+      "p90_ms": 3.6414,
+      "min_ms": 3.3924,
+      "mean_ms": 3.5257,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "adaptive_threshold_gaussian": {
+      "desc": "gray 768x576, ADAPTIVE_THRESH_GAUSSIAN_C, block 11, C 2",
+      "median_ms": 1.1339,
+      "p90_ms": 1.2819,
+      "min_ms": 1.0708,
+      "mean_ms": 1.154,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "canny": {
+      "desc": "gray 768x576, 50/150",
+      "median_ms": 2.1759,
+      "p90_ms": 2.2973,
+      "min_ms": 2.1292,
+      "mean_ms": 2.2058,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "find_contours_on_canny": {
+      "desc": "Canny edges 768x576, RETR_LIST, CHAIN_APPROX_SIMPLE",
+      "median_ms": 2.6804,
+      "p90_ms": 2.8287,
+      "min_ms": 2.5703,
+      "mean_ms": 2.7021,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "gaussian_blur_15": {
+      "desc": "BGR 768x576, 15x15",
+      "median_ms": 2.8429,
+      "p90_ms": 2.9146,
+      "min_ms": 2.7289,
+      "mean_ms": 2.8489,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "cvtcolor_bgr2lab": {
+      "desc": "BGR 768x576 uint8",
+      "median_ms": 1.3176,
+      "p90_ms": 2.3137,
+      "min_ms": 1.2294,
+      "mean_ms": 1.6145,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "clahe": {
+      "desc": "L channel 768x576, clip 3.0, 8x8 tiles",
+      "median_ms": 1.0997,
+      "p90_ms": 1.1985,
+      "min_ms": 1.0457,
+      "mean_ms": 1.1132,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "farneback_flow": {
+      "desc": "gray 384x288, pyr 0.5/3, win 15, iters 3, poly 5/1.2 (pipeline params)",
+      "median_ms": 27.3382,
+      "p90_ms": 28.542,
+      "min_ms": 26.28,
+      "mean_ms": 27.5754,
+      "n": 15,
+      "inner_calls_per_sample": 1
+    },
+    "mog2_apply": {
+      "desc": "BGR 384x288, history 200, varThreshold 24",
+      "median_ms": 0.9159,
+      "p90_ms": 1.0311,
+      "min_ms": 0.8846,
+      "mean_ms": 0.9456,
+      "n": 15,
+      "inner_calls_per_sample": 2
+    }
+  },
+  "dnn": {
+    "yolox_forward": {
+      "median_ms": 322.6393,
+      "p90_ms": 383.2665,
+      "min_ms": 240.042,
+      "mean_ms": 324.2217,
+      "n": 15,
+      "inner_calls_per_sample": 1,
+      "desc": "YOLOX-S 640x640 forward (cv.dnn, default backend/target)",
+      "model": "yolox_s_2022nov.onnx",
+      "model_sha256": "c5c2d13e59ae883e6af3b45daea64af4833a4951c92d116ec270d9ddbe998063"
+    }
+  },
+  "e2e": {
+    "normal_a": {
+      "median_ms": 4644.55,
+      "p90_ms": 4703.4,
+      "min_ms": 4585.7,
+      "mean_ms": 4644.55,
+      "n": 2,
+      "frames": 40,
+      "fps": 8.61,
+      "dnn_inferences": 10,
+      "stage_timings_ms_median_run": {
+        "decode_ms": 95.5,
+        "quality_ms": 276.1,
+        "enhance_ms": 0.1,
+        "bgsub_ms": 76.8,
+        "flow_ms": 1095.4,
+        "detect_ms": 3156.5,
+        "encode_ms": 0.0,
+        "total_ms": 4703.2
+      },
+      "runs": [
+        {
+          "wall_ms": 4703.4,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 95.5,
+            "quality_ms": 276.1,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 76.8,
+            "flow_ms": 1095.4,
+            "detect_ms": 3156.5,
+            "encode_ms": 0.0,
+            "total_ms": 4703.2
+          },
+          "inferences": 10
+        },
+        {
+          "wall_ms": 4585.7,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 98.5,
+            "quality_ms": 275.0,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 75.7,
+            "flow_ms": 1120.7,
+            "detect_ms": 3012.7,
+            "encode_ms": 0.0,
+            "total_ms": 4585.5
+          },
+          "inferences": 10
+        }
+      ]
+    },
+    "flight_left_a": {
+      "median_ms": 4620.85,
+      "p90_ms": 4684.3,
+      "min_ms": 4557.4,
+      "mean_ms": 4620.85,
+      "n": 2,
+      "frames": 40,
+      "fps": 8.66,
+      "dnn_inferences": 10,
+      "stage_timings_ms_median_run": {
+        "decode_ms": 92.0,
+        "quality_ms": 269.8,
+        "enhance_ms": 0.1,
+        "bgsub_ms": 95.9,
+        "flow_ms": 1101.4,
+        "detect_ms": 3122.1,
+        "encode_ms": 0.0,
+        "total_ms": 4684.0
+      },
+      "runs": [
+        {
+          "wall_ms": 4684.3,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 92.0,
+            "quality_ms": 269.8,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 95.9,
+            "flow_ms": 1101.4,
+            "detect_ms": 3122.1,
+            "encode_ms": 0.0,
+            "total_ms": 4684.0
+          },
+          "inferences": 10
+        },
+        {
+          "wall_ms": 4557.4,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 100.4,
+            "quality_ms": 282.6,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 81.5,
+            "flow_ms": 1163.1,
+            "detect_ms": 2926.8,
+            "encode_ms": 0.0,
+            "total_ms": 4557.3
+          },
+          "inferences": 10
+        }
+      ]
+    },
+    "smoke_normal": {
+      "median_ms": 4593.0,
+      "p90_ms": 4605.3,
+      "min_ms": 4580.7,
+      "mean_ms": 4593.0,
+      "n": 2,
+      "frames": 40,
+      "fps": 8.71,
+      "dnn_inferences": 10,
+      "stage_timings_ms_median_run": {
+        "decode_ms": 77.2,
+        "quality_ms": 291.3,
+        "enhance_ms": 0.1,
+        "bgsub_ms": 91.4,
+        "flow_ms": 1127.8,
+        "detect_ms": 3014.3,
+        "encode_ms": 0.0,
+        "total_ms": 4605.1
+      },
+      "runs": [
+        {
+          "wall_ms": 4580.7,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 73.4,
+            "quality_ms": 266.7,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 106.2,
+            "flow_ms": 1087.6,
+            "detect_ms": 3042.8,
+            "encode_ms": 0.0,
+            "total_ms": 4580.5
+          },
+          "inferences": 10
+        },
+        {
+          "wall_ms": 4605.3,
+          "frames": 40,
+          "timings": {
+            "decode_ms": 77.2,
+            "quality_ms": 291.3,
+            "enhance_ms": 0.1,
+            "bgsub_ms": 91.4,
+            "flow_ms": 1127.8,
+            "detect_ms": 3014.3,
+            "encode_ms": 0.0,
+            "total_ms": 4605.1
+          },
+          "inferences": 10
+        }
+      ]
+    }
+  },
+  "duration_s": 36.5,
+  "loadavg_at_end": [
+    1.07373046875,
+    0.99365234375,
+    0.71484375
+  ]
+}
