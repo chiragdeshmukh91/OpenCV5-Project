@@ -22,7 +22,7 @@ export function Panel({
   return (
     <section className={cx('panel flex min-h-0 flex-col', className)}>
       <header className="panel-header">
-        {icon && <span className="text-ink-400">{icon}</span>}
+        {icon && <span className="text-accent">{icon}</span>}
         <span className="truncate">{title}</span>
         {right && <span className="ml-auto flex items-center gap-2 normal-case tracking-normal">{right}</span>}
       </header>
@@ -35,11 +35,11 @@ export type Tone = 'neutral' | 'clear' | 'caution' | 'threat' | 'info' | 'muted'
 
 const TONES: Record<Tone, string> = {
   neutral: 'border-ink-600 bg-ink-800 text-ink-200',
-  clear: 'border-clear-soft/50 bg-clear-dim/70 text-[#9fe0cf]',
-  caution: 'border-caution-soft/50 bg-caution-dim/70 text-[#ecc987]',
-  threat: 'border-threat-soft/60 bg-threat-dim/70 text-[#eba9ac]',
-  info: 'border-info-soft/50 bg-info-dim/70 text-[#a9c7ea]',
-  muted: 'border-ink-700 bg-ink-850 text-ink-400',
+  clear: 'border-clear/40 bg-clear-dim/70 text-clear-bright',
+  caution: 'border-caution/40 bg-caution-dim/70 text-caution-bright',
+  threat: 'border-threat/50 bg-threat-dim/70 text-threat-bright',
+  info: 'border-info/40 bg-info-dim/70 text-info-bright',
+  muted: 'border-ink-700 bg-ink-850 text-ink-300',
 };
 
 export function Chip({
@@ -83,7 +83,7 @@ export function Stat({
   tone?: 'threat' | 'clear' | 'caution';
   className?: string;
 }) {
-  const color = tone === 'threat' ? 'text-[#e3888c]' : tone === 'clear' ? 'text-[#7fd3bd]' : tone === 'caution' ? 'text-[#e6bd6e]' : 'text-ink-100';
+  const color = tone === 'threat' ? 'text-threat-bright' : tone === 'clear' ? 'text-clear-bright' : tone === 'caution' ? 'text-caution-bright' : 'text-ink-100';
   return (
     <div className={cx('min-w-0', className)}>
       <div className="label truncate">{label}</div>
@@ -96,8 +96,8 @@ export function Stat({
 export function Bar({ value, color, className }: { value: number; color: string; className?: string }) {
   const w = Math.max(0, Math.min(1, value)) * 100;
   return (
-    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-ink-750', className)}>
-      <div className="h-full rounded-full transition-[width] duration-500 ease-out" style={{ width: `${w}%`, background: color }} />
+    <div className={cx('h-1.5 w-full overflow-hidden rounded-full bg-ink-700/70', className)}>
+      <div className="h-full rounded-full transition-[width] duration-500 ease-out" style={{ width: `${w}%`, background: color, boxShadow: `0 0 8px ${color}` }} />
     </div>
   );
 }

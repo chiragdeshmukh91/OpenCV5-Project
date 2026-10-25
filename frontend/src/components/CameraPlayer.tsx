@@ -5,8 +5,8 @@ import { heldDetections, enhanceLabel } from '../lib/format';
 import { imageDirToCanvas } from '../lib/geometry';
 import { cx } from './ui';
 
-const PERSON = '#8fc1ec';
-const WEAPON = '#e0ad52';
+const PERSON = '#67e8f9';
+const WEAPON = '#fbbf24';
 
 function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string) {
   ctx.font = '600 10px Inter, system-ui, sans-serif';
@@ -25,6 +25,8 @@ export function CameraPlayer({
   analysis,
   onSelectAnalysis,
   previewUrl,
+  baseTime,
+  hideHeader,
 }: {
   camera: Camera | undefined;
   state: CameraState | undefined;
@@ -32,6 +34,9 @@ export function CameraPlayer({
   analysis: Analysis | null;
   onSelectAnalysis: (aid: string) => void;
   previewUrl: string | null;
+  /** Epoch seconds when this analysis was recorded in the trace (shown as the overlay timestamp). */
+  baseTime?: number | null;
+  hideHeader?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -187,8 +192,8 @@ export function CameraPlayer({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <div className="min-w-0">
+      <div className={cx('flex items-center gap-2', hideHeader && analyses.length < 2 && 'hidden')}>
+        <div className={cx('min-w-0', hideHeader && 'hidden')}>
           <div className="flex items-center gap-2">
             <span className="font-mono text-[12px] font-semibold text-ink-100">{camera?.id ?? '—'}</span>
             <span className="truncate text-[12px] text-ink-300">{camera?.name}</span>
@@ -205,7 +210,7 @@ export function CameraPlayer({
                 title={`${a.analysis_id}: enhance=${a.params?.enhance}, detect every ${a.params?.detect_every}`}
                 className={cx(
                   'px-2 py-0.5 text-[10.5px] font-medium transition-colors',
-                  a.analysis_id === analysis?.analysis_id ? 'bg-info-dim text-[#a9c7ea]' : 'bg-ink-850 text-ink-400 hover:text-ink-200',
+                  a.analysis_id === analysis?.analysis_id ? 'bg-accent/25 text-accent-bright' : 'bg-ink-850 text-ink-400 hover:text-ink-200',
                 )}
               >
                 {enhanceLabel(a.params?.enhance)}
@@ -216,13 +221,13 @@ export function CameraPlayer({
         )}
       </div>
 
-      <div ref={wrapRef} className="relative w-full overflow-hidden rounded-md border border-ink-700 bg-black">
+      <div ref={wrapRef} className="relative w-full overflow-hidden rounded-lg border border-accent/20 bg-black shadow-[0_0_24px_-10px_rgba(34,211,238,0.5)]">
         {analysis ? (
           <>
             <canvas ref={canvasRef} className="block w-full" />
             <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">
               {analysis.synthetic && (
-                <span className="rounded border border-caution-soft/60 bg-black/70 px-1.5 py-[1px] text-[9.5px] font-bold tracking-[0.12em] text-[#ecc987]">
+                <span className="rounded border border-caution/60 bg-black/75 px-1.5 py-[1px] text-[9.5px] font-bold tracking-[0.12em] text-caution-bright">
                   SYNTHETIC
                 </span>
               )}
@@ -232,8 +237,13 @@ export function CameraPlayer({
             </div>
             <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-1.5 py-[1px] font-mono text-[9.5px] text-ink-200">
               <span className={cx('h-1.5 w-1.5 rounded-full', detectedNow ? 'bg-info' : 'bg-ink-500')} title="DNN ran on this frame" />
-              f{String(frame).padStart(2, '0')}/{urls.length} · {fps} fps
+              f{String(frame).padStart(2, '0')}/{urls.length} · FPS {fps}
             </div>
+            {baseTime != null && (
+              <div className="pointer-events-none absolute bottom-2 left-2 rounded bg-black/70 px-1.5 py-[1px] font-mono text-[10px] text-ink-100" title="Time the agent analysed this clip (synthetic footage has no capture time)">
+                analysed {new Date(baseTime * 1000).toLocaleDateString('en-CA')} {new Date(baseTime * 1000).toLocaleTimeString([], { hour12: false })}
+              </div>
+            )}
             {loadedCount === 0 && urls.length > 0 && (
               <div className="absolute inset-0 flex items-center justify-center text-ink-400">
                 <Loader2 size={18} className="animate-spin" />
@@ -249,7 +259,7 @@ export function CameraPlayer({
               <div className="text-[11px] text-ink-300">{previewUrl ? 'Showing source clip preview' : 'No clip assigned'}</div>
             </div>
             {previewUrl && (
-              <span className="absolute left-2 top-2 rounded border border-caution-soft/60 bg-black/70 px-1.5 py-[1px] text-[9.5px] font-bold tracking-[0.12em] text-[#ecc987]">
+              <span className="absolute left-2 top-2 rounded border border-caution/60 bg-black/75 px-1.5 py-[1px] text-[9.5px] font-bold tracking-[0.12em] text-caution-bright">
                 SYNTHETIC
               </span>
             )}
@@ -259,7 +269,7 @@ export function CameraPlayer({
 
       {analysis && (
         <div className="flex items-center gap-1.5">
-          <button type="button" className="btn-ghost px-2 py-1" onClick={() => setPlaying((p) => !p)} title={playing ? 'Pause' : 'Play'}>
+          <button type="button" className="btn-ghost px-2 py-1" onClick={() => setPlaying((p) => !p)} title={playing ? 'Pause' : 'Play'} aria-label={playing ? 'Pause playback' : 'Play'}>
             {playing ? <Pause size={12} /> : <Play size={12} />}
           </button>
           <input
@@ -271,10 +281,10 @@ export function CameraPlayer({
               setPlaying(false);
               setFrame(Number(e.target.value));
             }}
-            className="h-1 min-w-0 flex-1 cursor-pointer accent-[#6b9bd1]"
+            className="h-1 min-w-0 flex-1 cursor-pointer accent-[#22d3ee]"
             aria-label="Frame"
           />
-          <button type="button" className={cx('btn-ghost px-2 py-1', overlays && 'text-[#a9c7ea]')} onClick={() => setOverlays((o) => !o)}>
+          <button type="button" className={cx('btn-ghost px-2 py-1', overlays && 'text-accent-bright')} onClick={() => setOverlays((o) => !o)} aria-pressed={overlays} aria-label="Toggle detection overlays">
             {overlays ? <Eye size={12} /> : <EyeOff size={12} />}
             Overlays
           </button>

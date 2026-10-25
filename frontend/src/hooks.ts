@@ -8,6 +8,8 @@ export interface RunHook {
   run: RunState | null;
   loaded: boolean;
   error: string | null;
+  /** Wall-clock ms of the last successful poll. */
+  updatedAt: number | null;
   /** Restart polling immediately (e.g. after starting a run or submitting a review). */
   refresh: () => void;
 }
@@ -22,6 +24,7 @@ export function useRun(intervalMs = 700, idleIntervalMs = 5000): RunHook {
   const [run, setRun] = useState<RunState | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const timer = useRef<number | null>(null);
   const failures = useRef(0);
   const generation = useRef(0);
@@ -39,6 +42,7 @@ export function useRun(intervalMs = 700, idleIntervalMs = 5000): RunHook {
       setError(null);
       setRun(r);
       setLoaded(true);
+      setUpdatedAt(Date.now());
       if (r && ACTIVE_STATUSES.has(r.status)) {
         const delay = r.status === 'awaiting_review' ? intervalMs * 2 : intervalMs;
         timer.current = window.setTimeout(() => poll(gen), delay);
@@ -72,7 +76,7 @@ export function useRun(intervalMs = 700, idleIntervalMs = 5000): RunHook {
     };
   }, [refresh]);
 
-  return { run, loaded, error, refresh };
+  return { run, loaded, error, updatedAt, refresh };
 }
 
 export function useStatus(intervalMs = 10000) {
@@ -153,4 +157,34 @@ export function useNow(intervalMs: number, active: boolean): number {
     return () => window.clearInterval(id);
   }, [intervalMs, active]);
   return now;
+}
+
+const SESSION_KEY = 'clearpath.sessionRuns';
+
+function readSessionRuns(): { id: string; scenario: string; startedAt: number }[] {
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_KEY);
+    const v = raw ? JSON.parse(raw) : [];
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Run ids started from this browser session (client-side only; the backend has no run listing). */
+export function useSessionRuns() {
+  const [runs, setRuns] = useState(readSessionRuns);
+  const add = useCallback((id: string, scenario: string) => {
+    setRuns((prev) => {
+      if (prev.some((r) => r.id === id)) return prev;
+      const next = [{ id, scenario, startedAt: Date.now() }, ...prev].slice(0, 50);
+      try {
+        window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable: keep in memory */
+      }
+      return next;
+    });
+  }, []);
+  return { runs, add };
 }

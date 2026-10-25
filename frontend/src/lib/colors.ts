@@ -1,13 +1,14 @@
 // Colour logic for the dashboard. Pure functions so they can be unit-tested.
 
 export const PALETTE = {
-  neutral: '#1f2a36', // zone fill with no threat mass
-  threat: '#c2555a', // muted red, used only for threat probability / alerts
-  caution: '#d6a243',
-  clear: '#3fb39a',
-  info: '#6b9bd1',
-  gray: '#6b7685',
-  outline: '#3a4757',
+  neutral: '#14263f', // zone fill with no threat mass (navy)
+  threat: '#ef4444', // red, used only for threat probability / alerts
+  caution: '#f59e0b',
+  clear: '#2dd4bf',
+  info: '#38bdf8',
+  cyan: '#22d3ee',
+  gray: '#6782a3',
+  outline: '#2b4a70',
 } as const;
 
 type RGB = [number, number, number];
@@ -64,7 +65,7 @@ export function mixOklab(a: string, b: string, t: number): string {
  * Normalised intensity of a zone's threat probability relative to the current maximum.
  * A floor on the denominator keeps a flat, low-probability belief from being painted as alarming.
  */
-export function threatIntensity(p: number, maxP: number, floor = 0.1): number {
+export function threatIntensity(p: number, maxP: number, floor = 0.25): number {
   if (!Number.isFinite(p) || p <= 0) return 0;
   const denom = Math.max(maxP, floor);
   return Math.min(1, p / denom) ** 0.8;
@@ -89,15 +90,15 @@ export function routeColor(status: string): string {
 }
 
 export const CAMERA_STATUS_COLORS: Record<string, string> = {
-  idle: '#5b6879',
-  analyzing: PALETTE.info,
-  analyzed: PALETTE.clear,
+  idle: '#5f7a99',
+  analyzing: '#67e8f9',
+  analyzed: PALETTE.cyan,
   pending_recheck: PALETTE.caution,
-  fault: '#8a94a3',
+  fault: '#94a3b8',
 };
 
 export function cameraStatusColor(status: string | undefined): string {
-  return CAMERA_STATUS_COLORS[status ?? 'idle'] ?? '#5b6879';
+  return CAMERA_STATUS_COLORS[status ?? 'idle'] ?? '#5f7a99';
 }
 
 /** Observation status -> accent colour for the twin outline / chips. */
@@ -111,14 +112,14 @@ export function observedColor(observed: string): string {
 }
 
 export const PHASE_STYLES: Record<string, { fg: string; bg: string; border: string }> = {
-  PERCEIVE: { fg: '#8fb8e6', bg: 'rgba(107,155,209,0.12)', border: 'rgba(107,155,209,0.35)' },
-  DECIDE: { fg: '#b6a6e0', bg: 'rgba(150,130,210,0.12)', border: 'rgba(150,130,210,0.35)' },
-  VALIDATE: { fg: '#7fc8bb', bg: 'rgba(63,179,154,0.10)', border: 'rgba(63,179,154,0.32)' },
-  ACT: { fg: '#d9b77a', bg: 'rgba(214,162,67,0.10)', border: 'rgba(214,162,67,0.32)' },
-  REVIEW: { fg: '#e2c9a0', bg: 'rgba(226,201,160,0.10)', border: 'rgba(226,201,160,0.32)' },
-  ARCHIVE: { fg: '#a3adba', bg: 'rgba(163,173,186,0.10)', border: 'rgba(163,173,186,0.30)' },
-  ERROR: { fg: '#e08a8e', bg: 'rgba(194,85,90,0.14)', border: 'rgba(194,85,90,0.40)' },
-  INITIALIZING: { fg: '#a3adba', bg: 'rgba(163,173,186,0.10)', border: 'rgba(163,173,186,0.30)' },
+  PERCEIVE: { fg: '#7dd3fc', bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.38)' },
+  DECIDE: { fg: '#c4b5fd', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.38)' },
+  VALIDATE: { fg: '#5eead4', bg: 'rgba(45,212,191,0.10)', border: 'rgba(45,212,191,0.36)' },
+  ACT: { fg: '#fcd34d', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.36)' },
+  REVIEW: { fg: '#fdba74', bg: 'rgba(251,146,60,0.10)', border: 'rgba(251,146,60,0.36)' },
+  ARCHIVE: { fg: '#a5b4c8', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.30)' },
+  ERROR: { fg: '#fca5a5', bg: 'rgba(239,68,68,0.14)', border: 'rgba(239,68,68,0.45)' },
+  INITIALIZING: { fg: '#a5b4c8', bg: 'rgba(148,163,184,0.10)', border: 'rgba(148,163,184,0.30)' },
 };
 
 export function phaseStyle(phase: string) {

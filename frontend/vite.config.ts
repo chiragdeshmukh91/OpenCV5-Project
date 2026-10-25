@@ -16,7 +16,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1800,
     rollupOptions: {
       output: {
-        manualChunks: { three: ['three', '@react-three/fiber', '@react-three/drei'] },
+        manualChunks: { three: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing', 'postprocessing'] },
       },
     },
   },
