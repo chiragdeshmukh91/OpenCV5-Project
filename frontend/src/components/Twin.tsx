@@ -451,7 +451,7 @@ function Bridge({ apiRef, needle }: { apiRef: MutableRefObject<TwinApi | null>; 
 }
 
 /** Label anchor: centroid for rooms; for corridors, a point along the long axis clear of camera markers. */
-function labelPoint(z: Zone, b: Building): Vec2 {
+export function labelPoint(z: Zone, b: Building): Vec2 {
   if (z.kind !== 'corridor') return z.centroid;
   const xs = z.polygon.map((p) => p[0]);
   const ys = z.polygon.map((p) => p[1]);

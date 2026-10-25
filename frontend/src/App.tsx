@@ -6,8 +6,10 @@ import { TopBar } from './components/TopBar';
 import { ScenarioInputs } from './components/ScenarioInputs';
 import { NAV, Sidebar, StatusBar, type PageId } from './components/Shell';
 import { AppContext, type AppCtx } from './context';
-import { EvidencePage, HistoryPage, IntelPage, LabPage, OperationsPage, PAGE_META, PageTitle, TwinPage } from './pages';
+import { EvidencePage, HistoryPage, IntelPage, LabPage, PAGE_META, PageTitle, TwinPage } from './pages';
+import { ScenePage } from './components/scene/ScenePage';
 import { isPerceiveAnalysis } from './lib/format';
+import { cx } from './components/ui';
 
 const PAGE_IDS = new Set<PageId>(NAV.map((n) => n.id));
 
@@ -34,7 +36,7 @@ export default function App() {
   const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [follow, setFollow] = useState(true);
-  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1440);
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileNav, setMobileNav] = useState(false);
   const [historyRunId, setHistoryRunId] = useState<string | null>(null);
 
@@ -180,7 +182,7 @@ export default function App() {
       content = <HistoryPage />;
       break;
     default:
-      content = <OperationsPage />;
+      content = <ScenePage />;
   }
   const meta = page !== 'operations' ? PAGE_META[page] : null;
 
@@ -226,7 +228,7 @@ export default function App() {
         </div>
         <div className="flex min-h-0 flex-1">
           <Sidebar page={page} onNavigate={navigate} collapsed={collapsed} onToggleCollapsed={() => setCollapsed((c) => !c)} mobileOpen={mobileNav} onCloseMobile={() => setMobileNav(false)} />
-          <main id="main" tabIndex={-1} className="flex min-w-0 flex-1 flex-col p-3 outline-none wide:min-h-0 wide:overflow-hidden" key={page}>
+          <main id="main" tabIndex={-1} className={cx('flex min-w-0 flex-1 flex-col outline-none wide:min-h-0 wide:overflow-hidden', page === 'operations' ? 'p-0' : 'p-3')} key={page}>
             {meta && <PageTitle icon={meta.icon} title={meta.title} sub={meta.sub} />}
             <div className="fade-in min-h-0 flex-1">{content}</div>
           </main>

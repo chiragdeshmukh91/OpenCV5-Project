@@ -40,7 +40,7 @@ export function Sidebar({
           'no-print z-50 flex shrink-0 flex-col border-r border-accent/10 bg-[rgba(4,11,22,0.86)] backdrop-blur-xl transition-[width,transform] duration-200',
           'fixed bottom-0 left-0 top-0 w-[220px] wide:static wide:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
-          collapsed ? 'wide:w-[64px]' : 'wide:w-[200px] xwide:w-[212px]',
+          collapsed ? 'wide:w-[60px]' : 'wide:w-[200px] xwide:w-[212px]',
         )}
       >
         <ul className="flex flex-col gap-1 px-2 pt-3">
@@ -67,6 +67,14 @@ export function Sidebar({
                   {active && <span className="absolute left-0 top-1.5 h-[calc(100%-12px)] w-[3px] rounded-r bg-accent shadow-glow-cyan" aria-hidden />}
                   <span className={cx('shrink-0', active ? 'text-accent-bright' : 'text-ink-400 group-hover:text-accent')}>{n.icon}</span>
                   <span className={cx('truncate', collapsed && 'wide:sr-only')}>{n.label}</span>
+                  {collapsed && (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-lg border border-accent/25 bg-ink-900/95 px-2.5 py-1 text-[12px] font-medium text-ink-100 opacity-0 shadow-xl backdrop-blur transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 wide:block"
+                    >
+                      {n.label}
+                    </span>
+                  )}
                 </button>
               </li>
             );
