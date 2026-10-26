@@ -584,7 +584,7 @@ export function PageTitle({ icon, title, sub }: { icon: React.ReactNode; title: 
 export const PAGE_META = {
   twin: { icon: <Boxes size={18} />, title: 'Digital Twin', sub: 'Building model, threat heat, routes — mathematical validity vs operational safety' },
   evidence: { icon: <ScanEye size={18} />, title: 'Evidence', sub: 'Every OpenCV analysis (raw and enhanced), per-camera measurements, verification tasks' },
-  intel: { icon: <ShieldAlert size={18} />, title: 'Agent Intelligence', sub: 'Threat analytics, response options with preconditions, and the full agent trace' },
-  lab: { icon: <FlaskConical size={18} />, title: 'Scenario Lab', sub: 'Simulated scenarios and the visual inputs fed to each camera' },
-  history: { icon: <History size={18} />, title: 'Incident History', sub: 'Runs started in this browser session — read-only reports' },
+  intel: { icon: <ShieldAlert size={18} />, title: 'Agent Intelligence', sub: 'How the agent reached its recommendation' },
+  lab: { icon: <FlaskConical size={18} />, title: 'Scenario Lab', sub: 'Simulated scenarios · synthetic footage' },
+  history: { icon: <History size={18} />, title: 'Incident History', sub: 'This session · read-only' },
 } as const;

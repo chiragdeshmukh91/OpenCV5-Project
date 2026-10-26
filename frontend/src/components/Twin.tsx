@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { AutoClearGuard } from './scene/CampusScene';
 import { Html, Line, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -717,6 +718,7 @@ function Scene({
       )}
       <FitView f={f} mode={mode} tick={fitTick} />
       <Bridge apiRef={apiRef} needle={needle} />
+      <AutoClearGuard active={!bloom} />
       {bloom && (
         <EffectComposer multisampling={0}>
           <Bloom mipmapBlur luminanceThreshold={0.62} luminanceSmoothing={0.2} intensity={0.85} radius={0.7} />
@@ -953,7 +955,7 @@ export function Twin({
         ) : (
           <Canvas
             dpr={[1, 2]}
-            gl={{ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' }}
+            gl={{ antialias: true, powerPreference: 'high-performance' }}
             onPointerMissed={() => setPinned(null)}
             style={{ cursor: hovered ? 'pointer' : 'grab' }}
           >

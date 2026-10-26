@@ -92,6 +92,19 @@ function Bridge({ apiRef, needle }: { apiRef: MutableRefObject<SceneApi | null>;
   return null;
 }
 
+/**
+ * postprocessing's EffectComposer sets renderer.autoClear = false and does not restore it on unmount.
+ * When quality drops to 'low' the composer unmounts, so without this guard frames are drawn on top of
+ * previous frames (smearing while orbiting). Runs before R3F's default render each frame.
+ */
+export function AutoClearGuard({ active }: { active: boolean }) {
+  const gl = useThree((s) => s.gl);
+  useFrame(() => {
+    if (active && !gl.autoClear) gl.autoClear = true;
+  });
+  return null;
+}
+
 /** Pause rendering while the tab is hidden. */
 function VisibilityPause() {
   const { setFrameloop } = useThree();
@@ -155,7 +168,7 @@ export function CampusScene({
     <Canvas
       shadows={SH ? 'soft' : false}
       dpr={high ? [1, 1.75] : 0.75}
-      gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
+      gl={{ antialias: true, powerPreference: 'high-performance' }}
       camera={{ fov: 38, near: 0.5, far: 2000, position: goal.position }}
       onPointerMissed={(e) => {
         if ((e.target as HTMLElement | null)?.tagName === 'CANVAS') onMiss();
@@ -214,6 +227,7 @@ export function CampusScene({
         <CameraRig goal={goal} goalKey={goalKey} />
         <Bridge apiRef={apiRef} needle={needle} />
         <VisibilityPause />
+        <AutoClearGuard active={!(FX && high)} />
         {FX && high && (
           <EffectComposer multisampling={0}>
             <Bloom mipmapBlur luminanceThreshold={0.72} luminanceSmoothing={0.18} intensity={1.05} radius={0.75} />

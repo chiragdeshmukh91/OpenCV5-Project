@@ -149,7 +149,17 @@ body {
   }
 }
 
+.print-only {
+  display: none;
+}
+
 @media print {
+  .print-only {
+    display: block;
+  }
+  .screen-only {
+    display: none !important;
+  }
   body {
     background: #fff;
     color: #000;
