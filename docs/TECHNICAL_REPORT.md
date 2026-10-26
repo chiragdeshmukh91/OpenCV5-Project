@@ -1,6 +1,8 @@
 # CLEARPATH — Technical Report
 
-OpenCV AI Competition 2026 (powered by AWS) · Focus paths: **Agentic Vision** and **Best Use of COOL**
+OpenCV AI Competition 2026 (powered by AWS) · Focus path: **Agentic Vision** (COOL: integration prepared, not measured, not claimed)
+
+**Live demo:** http://52.70.58.148 · Graviton proof: http://52.70.58.148/v1/health
 
 ## 1. Problem and users
 
@@ -17,6 +19,8 @@ its uncertainty to a human, who decides.
 ## 2. Architecture
 
 ![architecture](diagrams/architecture.png)
+
+![AWS deployment architecture](diagrams/clearpath-aws-architecture.png)
 
 * **Vision Service** (`clearpath.vision.service`, FastAPI): stateless OpenCV 5 workload; `/v1/analyze`,
   `/v1/analyze-upload`, `/v1/health` (reports CPU architecture, EC2 instance type via IMDSv2, OpenCV build fingerprint,
@@ -85,14 +89,28 @@ known ground truth. The unmodified `vtest.avi` is also evaluated as real footage
 
 ## 5. AWS deployment
 
-`deploy/aws/` provisions one Graviton instance (default `c7g.xlarge`) with the Vision Service and API as separate
+`deploy/aws/` provisions one Graviton instance (script default `c7g.xlarge`; deployed on `t4g.small`, see below) with the Vision Service and API as separate
 systemd services (`VISION_MODE=remote`), nginx, S3 (private, encrypted), CloudWatch metrics and an instance role
 limited to `s3:Get/PutObject` on `app/ footage/ runs/`, `s3:ListBucket` on the bucket, and
 `cloudwatch:PutMetricData` restricted to namespace `CLEARPATH`. Evidence that the OpenCV workload runs on Graviton is
 produced by the system itself: `/v1/health` (`machine: aarch64`, `instance_type`), per-analysis `service` block shown
 in the UI, CloudWatch metrics with `Arch=aarch64`, and archived run JSON in S3. `verify.sh` checks all of these.
-*Status at time of writing: kit written and statically checked; provisioning is run by the team with their own AWS
-profile.*
+**Deployed and verified (2026-10-26).** Provisioned from AWS CloudShell in us-east-1 on a free-plan account, so the
+instance is the free-tier Graviton type `t4g.small` (2 vCPU Graviton2, 2 GiB RAM + 4 GiB swap, Ubuntu 24.04 arm64,
+OpenCV 5.0.0 `opencv-python-headless` aarch64 wheel). Public endpoint: http://52.70.58.148 (port 80 open for judging; no
+SSH, admin via SSM Session Manager). `verify.sh` output:
+
+| Check | Result |
+|---|---|
+| `/v1/health` runtime | `machine=aarch64`, `graviton=true`, `instance_type=t4g.small` (from IMDSv2), OpenCV 5.0.0, `cool=not_in_use` |
+| API → vision | `VISION_MODE=remote`; API has AWS credentials via the instance role |
+| Scenario S2 end to end | 6 vision calls, 61.1 s of vision time, 72 s wall time to `awaiting_review`; recommended `LOCKDOWN_PLUS_EVACUATE` (expected); every analysis reports `service.machine=aarch64`; approved → SIMULATED actions only |
+| CloudWatch | namespace `CLEARPATH`, `VisionTotalMs` with `Arch=aarch64, OpenCV=5.0.0, COOL=not_in_use`: 6 samples, average ≈ 10.2 s, max ≈ 10.5 s per 40-frame clip |
+| S3 | `runs/20261026-075325-f32587.json` (54 KB: full trace, belief, routes, review, timings) |
+
+On this burstable 2-vCPU instance one camera analysis takes about 10 s, against about 4.6 s on the 2-thread x86 dev box.
+The deployment scripts accept `--instance-type c7g.xlarge` for a non-burstable 4-vCPU Graviton3 instance on a paid
+account; we did not measure it.
 
 ## 6. COOL
 
@@ -105,8 +123,11 @@ when a marker unique to the COOL build is present in `cv.getBuildInformation()` 
 
 Measured so far (stock OpenCV 5.0.0, x86_64 dev box, 2 threads — *not* Graviton): full pipeline 4.6 s per 40-frame clip
 (8.6 fps), of which YOLOX ≈ 3.1 s (10 inferences, ~320 ms each) and Farneback ≈ 1.1 s; resize 768×576→384×288
-0.25 ms; adaptiveThreshold 1.13 ms; findContours 2.68 ms. **No COOL measurements exist yet**; the protocol in
-`backend/benchmarks/README.md` produces them on Graviton.
+0.25 ms; adaptiveThreshold 1.13 ms; findContours 2.68 ms. **No COOL measurements exist.** Every COOL listing on AWS Marketplace requires a
+non-free-tier Graviton family (c6g/m6g/r6g, c8g/m8g/r8g or c9g/m9g), which our free-plan account cannot launch, so we did
+not run COOL and do not claim the Best Use of COOL award. The live service reports `cool.state = not_in_use` and
+CloudWatch metrics carry `COOL=not_in_use`, so the system never presents stock OpenCV as COOL. The protocol in
+`backend/benchmarks/README.md` produces a same-instance stock-vs-COOL comparison when an eligible instance is available.
 
 ## 7. Evaluation
 
@@ -119,7 +140,9 @@ From `backend/eval/run_eval.py` (full table in `EVALUATION_RESULTS.md`):
 * Failure handling: S3 faults 2 cameras, re-runs 1 with dehaze, declines to localise, recommends building-wide lockdown
   and lists verification tasks. S4 shows routes that are mathematically valid but operationally congested.
 * Human control: 100% of runs paused for review; approvals produce only SIMULATED log entries (tested).
-* Tests: 74 backend (pytest) + 18 frontend (vitest).
+* Tests: 74 backend (pytest) + 51 frontend (vitest), re-run 2026-10-26.
+* On AWS: `verify.sh` passes on the live Graviton instance (section 5). The perception and agent tables above were
+  produced on the x86 dev box; the same scenario (S2) reproduced the expected recommendation on Graviton.
 
 ## 8. Limitations
 
@@ -127,7 +150,10 @@ From `backend/eval/run_eval.py` (full table in `EVALUATION_RESULTS.md`):
   hand-set, documented constants and need validation on real, consented, representative data.
 * Single-storey fictional layout; no DXF import yet; no exterior cameras (so SECURE is never supported by evidence).
 * Belief assumes a single threat location; multiple attackers and moving threats are future work.
-* ~4.5 s per camera on 2 vCPU; Graviton sizing and COOL are the intended levers.
+* Speed: about 10 s per camera on the free-tier `t4g.small` (about 4.6 s on the x86 dev box), so a scenario takes about
+  1 minute. Larger Graviton instances are the intended levers; neither was measured.
+* Demo deployment: plain HTTP (no TLS; CloudFront or an ALB with ACM would add it), one shared instance (starting a
+  scenario cancels the run in progress), in-progress runs live in memory (completed, reviewed runs are archived to S3).
 
 ## 9. Responsible use
 

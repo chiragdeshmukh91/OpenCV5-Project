@@ -4,12 +4,33 @@
 threat-location belief over a school digital twin, decides which camera to look at next, re-processes footage when the
 image quality is poor, separates *mathematical route validity* from *operational safety*, evaluates predefined response
 procedures and **always pauses for human review**. Built for the OpenCV AI Competition 2026 (powered by AWS); targets
-the Agentic Vision and Best Use of COOL awards.
+the **Agentic Vision** award. COOL integration is prepared (swap point + benchmark harness) but was **not measured**, so
+we do not claim the Best Use of COOL award.
 
 > **SIMULATION ONLY.** Footage is synthetic (real pedestrians from OpenCV's public sample video, recomposited), triggers
 > are simulated reports, and no code path can send a real alert, notification or door command.
 
 ![dashboard](docs/screenshots/02-awaiting-review-1600.png)
+
+## Live demo (for judges)
+
+| | |
+|---|---|
+| **App** | **http://52.70.58.148** (plain HTTP, no login) |
+| **Graviton proof** | http://52.70.58.148/v1/health → `"machine": "aarch64"`, `"graviton": true`, `"instance_type": "t4g.small"` |
+| **Where it runs** | One AWS Graviton EC2 instance (`t4g.small`, arm64, us-east-1), deployed with `deploy/aws/` |
+
+Suggested 3-minute tour:
+
+1. Start **S1 – unverified report**. The agent looks at 3 of 7 cameras, finds no corroboration and recommends **HOLD**,
+   not evacuation. This is the core idea: one report is never enough to move students.
+2. Start **S3 – degraded sensing**. Frozen and obstructed feeds become coverage gaps, smoke triggers a dehaze re-run,
+   and the agent declines to localise and recommends building-wide **LOCKDOWN** with verification tasks.
+3. Open the **trace** to see how each OpenCV result changed the next tool call, then **approve** (actions are logged as
+   `SIMULATED` only).
+
+Each camera analysis takes about 10 s on this 2-vCPU instance, so a scenario takes about 1 minute. The demo is a single
+shared instance: starting a new scenario cancels the one in progress, so if a run is already going, wait for it.
 
 ## What it does
 
@@ -27,7 +48,13 @@ the Agentic Vision and Best Use of COOL awards.
 
 * Perception: **15/15** clips classified correctly (14 synthetic with generation ground truth + 1 unmodified real clip).
 * Agent: **4/4** scenarios produce the expected recommendation; a naive "evacuate on any weapon report" rule scores **0/4**.
-* Backend tests: **74 passed**; frontend tests: **18 passed**.
+* Backend tests: **74 passed**; frontend tests: **51 passed** (5 files).
+* AWS (`deploy/aws/verify.sh` on the live instance, 2026-10-26): **all checks passed**. The vision service reports
+  `aarch64` / `t4g.small` via IMDSv2; scenario S2 recommended `LOCKDOWN_PLUS_EVACUATE` with all 6 analyses on
+  `aarch64`; CloudWatch received `VisionTotalMs` (about 10.2 s average per analysis) with `Arch=aarch64`,
+  `OpenCV=5.0.0`, `COOL=not_in_use`; the run was archived to `s3://…/runs/<run_id>.json`.
+
+![AWS architecture](docs/diagrams/clearpath-aws-architecture.png)
 
 See [docs/EVALUATION_RESULTS.md](docs/EVALUATION_RESULTS.md) and [docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md).
 
@@ -69,12 +96,29 @@ cd frontend && npm test && npm run build
 
 ## Deploy on AWS Graviton
 
-See [deploy/aws/README.md](deploy/aws/README.md). From WSL/Linux with AWS CLI v2 configured with an **IAM Identity
-Center or IAM user profile (not root credentials)**:
+Full guide: [deploy/aws/README.md](deploy/aws/README.md). The scripts create a private encrypted S3 bucket, a
+least-privilege instance role, a security group (TCP 80 only, no SSH), upload the app bundle and launch an Ubuntu 24.04
+arm64 instance that installs and starts everything on first boot (about 10–15 min).
+
+What we ran (AWS CloudShell in the console, region us-east-1, free-plan account):
 
 ```bash
-cd deploy/aws && ./provision.sh --instance-type c7g.xlarge && ./verify.sh     # ./teardown.sh when done
+# on your PC: build the UI and pack the sources
+cd frontend && npm ci && npm run build && cd ..
+tar -czf clearpath-src.tar.gz --exclude=node_modules --exclude=__pycache__ --exclude=.git \
+    --exclude=backend/runtime --exclude="backend/footage/*.avi" backend deploy frontend/dist
+
+# in CloudShell: upload clearpath-src.tar.gz (Actions -> Upload file), then
+mkdir -p ~/clearpath && tar -xzf ~/clearpath-src.tar.gz -C ~/clearpath && cd ~/clearpath/deploy/aws
+CLEARPATH_ALLOW_ROOT=1 bash provision.sh --region us-east-1 --instance-type t4g.small --public
+bash verify.sh        # after bootstrap: health, Graviton proof, scenario S2, CloudWatch, S3
+bash teardown.sh      # when done
 ```
+
+`CLEARPATH_ALLOW_ROOT=1` is only needed when CloudShell is opened as the root user; with an IAM user or SSO profile, drop
+it. `--public` opens port 80 to everyone (needed for judging); without it, only your own IP can connect. Use
+`--instance-type c7g.xlarge` on a paid account for faster analyses (4 non-burstable Graviton3 vCPUs; not measured by us). To update a running deployment, see
+"Update the app" in `deploy/aws/README.md`.
 
 ## Scenarios
 
