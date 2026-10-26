@@ -12,6 +12,14 @@ APP=/opt/clearpath
 export HOME=/root
 export DEBIAN_FRONTEND=noninteractive
 
+# --- swap on small instances (t4g.small has 2 GiB RAM; pip + OpenCV + YOLOX need headroom)
+MEM_KB="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+if [[ "$MEM_KB" -lt 6000000 && ! -f /swapfile ]]; then
+  fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  echo "swap enabled (RAM ${MEM_KB} kB)"
+fi
+
 # --- OS packages (python3 is 3.12 on Ubuntu 24.04)
 apt-get update -y
 apt-get install -y --no-install-recommends python3-venv python3-pip nginx unzip curl ca-certificates

@@ -6,7 +6,8 @@
 # Credentials: ONLY the standard AWS CLI chain (AWS_PROFILE / env vars / SSO / config). Never paste keys here.
 # Use an IAM Identity Center (SSO) profile or IAM user - NOT the root account.
 #
-#   ./provision.sh [--region us-east-1] [--instance-type c7g.xlarge] [--cidr 203.0.113.7/32] [--bucket NAME]
+#   ./provision.sh [--region us-east-1] [--instance-type c7g.xlarge] [--cidr 203.0.113.7/32 | --public] [--bucket NAME]
+#   --public  allow HTTP :80 from anywhere (0.0.0.0/0) so hackathon judges can open the URL
 #
 # Writes deploy/aws/.state.env (used by verify.sh and teardown.sh). Costs money while running: see README.
 set -euo pipefail
@@ -27,8 +28,9 @@ while [[ $# -gt 0 ]]; do
     --region) REGION="$2"; shift 2 ;;
     --instance-type) INSTANCE_TYPE="$2"; shift 2 ;;
     --cidr) CIDR="$2"; shift 2 ;;
+    --public) CIDR="0.0.0.0/0"; shift ;;
     --bucket) BUCKET="$2"; shift 2 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 1 ;;
   esac
 done
