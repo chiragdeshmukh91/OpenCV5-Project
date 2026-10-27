@@ -98,7 +98,8 @@ def _track_velocity(tr: dict) -> tuple[float, float, float] | None:
 
 # --------------------------------------------------------------------------- main analysis
 def analyze_video(path: Path | str, *, enhance_mode: str = "none", detect_every: int = 4, conf: float | None = None,
-                  max_frames: int = 60, frame_width: int = 480, include_frames: bool = True) -> dict[str, Any]:
+                  max_frames: int = 60, frame_width: int = 960, include_frames: bool = True,
+                  jpeg_quality: int = 88) -> dict[str, Any]:
     t_start = time.perf_counter()
     timings = {"decode_ms": 0.0, "quality_ms": 0.0, "enhance_ms": 0.0, "bgsub_ms": 0.0, "flow_ms": 0.0,
                "detect_ms": 0.0, "encode_ms": 0.0}
@@ -196,9 +197,11 @@ def analyze_video(path: Path | str, *, enhance_mode: str = "none", detect_every:
                           "fg_ratio": round(fg_ratio, 4)})
         if include_frames:
             t0 = time.perf_counter()
-            scale = frame_width / W
-            jpg = cv.imencode(".jpg", cv.resize(img, (frame_width, int(H * scale)), interpolation=cv.INTER_AREA),
-                              [cv.IMWRITE_JPEG_QUALITY, 72])[1]
+            # Evidence frames at native resolution (never upscaled, capped at frame_width) so people and
+            # objects stay legible when inspected full-size.
+            out_w = min(W, frame_width)
+            small_img = img if out_w == W else cv.resize(img, (out_w, int(round(H * out_w / W))), interpolation=cv.INTER_AREA)
+            jpg = cv.imencode(".jpg", small_img, [cv.IMWRITE_JPEG_QUALITY, jpeg_quality])[1]
             frames_out.append(base64.b64encode(jpg.tobytes()).decode())
             timings["encode_ms"] += (time.perf_counter() - t0) * 1000
         i += 1
@@ -231,6 +234,28 @@ def analyze_video(path: Path | str, *, enhance_mode: str = "none", detect_every:
     # ---------------- motion summary
     h_med = float(np.median(person_heights)) if person_heights else None
     vels = [v for tr in tracks if (v := _track_velocity(tr)) is not None]
+    # Per-track measurements, so the UI can show exactly which tracked people drove the activity label.
+    tracks_detail = []
+    for tr in tracks:
+        v = _track_velocity(tr)
+        if v is None:
+            continue
+        vx, vy, hm = v
+        spd = math.hypot(vx, vy) / hm if hm > 0 else 0.0
+        tracks_detail.append({"id": tr["id"], "first_frame": int(round(tr["pts"][0][3] * fps)),
+                              "last_frame": int(round(tr["pts"][-1][3] * fps)), "points": len(tr["pts"]),
+                              "speed_bh_s": round(spd, 2), "running": bool(spd > RUNNING_BH_PER_S),
+                              "direction_image_deg": round(math.degrees(math.atan2(-vy, vx)) % 360, 1)})
+    running_ids = {t["id"] for t in tracks_detail if t["running"]}
+    # Key frame: the detection frame showing the most running tracks (else the most people).
+    key_frame, best = None, (-1, -1)
+    for rec in per_frame:
+        if not rec["detected"]:
+            continue
+        persons_f = [d for d in rec["detections"] if d.get("cls") == "person"]
+        score = (sum(1 for d in persons_f if d.get("track") in running_ids), len(persons_f))
+        if score > best:
+            key_frame, best = rec["index"], score
     speeds = [math.hypot(vx, vy) / h for vx, vy, h in vels if h > 0]
     running_fraction = float(np.mean([s > RUNNING_BH_PER_S for s in speeds])) if speeds else 0.0
     if vels:
@@ -252,9 +277,10 @@ def analyze_video(path: Path | str, *, enhance_mode: str = "none", detect_every:
     timings["total_ms"] = round((time.perf_counter() - t_start) * 1000, 1)
     return {
         "frames_analyzed": i,
+        "key_frame": key_frame,
         "fps": fps,
         "frame_size": [W, H],
-        "preview_width": frame_width,
+        "preview_width": min(W, frame_width),
         "params": {"enhance": enhance_mode, "detect_every": detect_every, "conf": conf or detector.conf},
         "quality": {**{k: round(v, 3) for k, v in med.items()}, "frozen_ratio": round(frozen_ratio, 3),
                     "obstructed_ratio": round(tamper_ratio, 3), "issues": issues, "reliability": round(reliability, 3)},
@@ -273,6 +299,8 @@ def analyze_video(path: Path | str, *, enhance_mode: str = "none", detect_every:
             "direction_image_deg": round(dir_img, 1) if dir_img is not None else None,
             "flow_direction_image_deg": round(flow_dir, 1) if flow_dir is not None else None,
             "coherence": round(coherence, 2),
+            "tracks_detail": tracks_detail,
+            "running_track_ids": sorted(running_ids),
             "track_vectors": [[round(vx, 1), round(vy, 1), round(h, 1)] for vx, vy, h in vels][:40],
         },
         "weapon_like": weapon_like,

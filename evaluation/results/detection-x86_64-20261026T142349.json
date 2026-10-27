@@ -1,0 +1,481 @@
+{
+  "meta": {
+    "generated": "2026-10-26T14:23:49Z",
+    "machine": "x86_64",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "cpus": 2,
+    "opencv": "5.0.0",
+    "detector": "yolox_s_2022nov.onnx",
+    "conf": 0.35,
+    "min_visible": 0.5
+  },
+  "summary": {
+    "detection": {
+      "0.5": {
+        "clean": {
+          "tp": 2172,
+          "fp": 68,
+          "fn": 158,
+          "precision": 0.97,
+          "recall": 0.932,
+          "f1": 0.951
+        },
+        "smoke": {
+          "tp": 237,
+          "fp": 2,
+          "fn": 5,
+          "precision": 0.992,
+          "recall": 0.979,
+          "f1": 0.985
+        },
+        "degraded": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 137,
+          "precision": null,
+          "recall": 0.0,
+          "f1": null
+        }
+      },
+      "0.75": {
+        "clean": {
+          "tp": 2013,
+          "fp": 230,
+          "fn": 317,
+          "precision": 0.897,
+          "recall": 0.864,
+          "f1": 0.88
+        },
+        "smoke": {
+          "tp": 235,
+          "fp": 4,
+          "fn": 7,
+          "precision": 0.983,
+          "recall": 0.971,
+          "f1": 0.977
+        },
+        "degraded": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 137,
+          "precision": null,
+          "recall": 0.0,
+          "f1": null
+        }
+      }
+    },
+    "plate_residual_person_detections": 0,
+    "running_track_classification": {
+      "tp": 29,
+      "fp": 1,
+      "fn": 6,
+      "precision": 0.967,
+      "recall": 0.829,
+      "f1": 0.892,
+      "tn": 55,
+      "tracks": 92,
+      "unmatched_tracks": 1
+    },
+    "clip_candidate_events": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tn": 10,
+      "false_alert_rate": 0.0
+    },
+    "timing": {
+      "dnn_infer_ms_median": 493.3,
+      "dnn_infer_ms_p95": 988.7,
+      "pipeline_ms_per_clip_median": 7017.9,
+      "frames_per_clip": 40,
+      "detect_every": 4
+    }
+  },
+  "clips": [
+    {
+      "clip": "congested_exit",
+      "behavior": "congested",
+      "people": 14,
+      "activity": "congested",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 460,
+          "fp": 51,
+          "fn": 100,
+          "precision": 0.9,
+          "recall": 0.821,
+          "f1": 0.859
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 14,
+        "unmatched_tracks": 0,
+        "tracks": 14
+      },
+      "pipeline_ms": 12803.4,
+      "wall_ms": 12808.5
+    },
+    {
+      "clip": "empty_a",
+      "behavior": "empty",
+      "people": 0,
+      "activity": "empty",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {},
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 0
+      },
+      "pipeline_ms": 11866.3,
+      "wall_ms": 11867.4
+    },
+    {
+      "clip": "empty_b",
+      "behavior": "empty",
+      "people": 0,
+      "activity": "empty",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {},
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 0
+      },
+      "pipeline_ms": 7508.2,
+      "wall_ms": 7509.6
+    },
+    {
+      "clip": "flight_left_a",
+      "behavior": "flight",
+      "people": 9,
+      "activity": "flight",
+      "candidate_event": true,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 213,
+          "fp": 3,
+          "fn": 4,
+          "precision": 0.986,
+          "recall": 0.982,
+          "f1": 0.984
+        }
+      },
+      "running_tracks": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 10
+      },
+      "pipeline_ms": 6521.4,
+      "wall_ms": 6522.5
+    },
+    {
+      "clip": "flight_left_b",
+      "behavior": "flight",
+      "people": 7,
+      "activity": "flight",
+      "candidate_event": true,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 149,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.993,
+          "f1": 0.997
+        }
+      },
+      "running_tracks": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 3,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 7
+      },
+      "pipeline_ms": 7797.7,
+      "wall_ms": 7798.4
+    },
+    {
+      "clip": "flight_right_a",
+      "behavior": "flight",
+      "people": 9,
+      "activity": "flight",
+      "candidate_event": true,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 157,
+          "fp": 4,
+          "fn": 5,
+          "precision": 0.975,
+          "recall": 0.969,
+          "f1": 0.972
+        }
+      },
+      "running_tracks": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 10
+      },
+      "pipeline_ms": 7140.0,
+      "wall_ms": 7141.3
+    },
+    {
+      "clip": "flight_right_b",
+      "behavior": "flight",
+      "people": 8,
+      "activity": "flight",
+      "candidate_event": true,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 168,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.982,
+          "recall": 0.988,
+          "f1": 0.985
+        }
+      },
+      "running_tracks": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 3,
+        "tn": 0,
+        "unmatched_tracks": 0,
+        "tracks": 8
+      },
+      "pipeline_ms": 6720.3,
+      "wall_ms": 6721.3
+    },
+    {
+      "clip": "frozen_normal",
+      "behavior": "normal",
+      "people": 6,
+      "activity": "unusable",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 200,
+          "fp": 0,
+          "fn": 40,
+          "precision": 1.0,
+          "recall": 0.833,
+          "f1": 0.909
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unmatched_tracks": 0,
+        "tracks": 5
+      },
+      "pipeline_ms": 6964.2,
+      "wall_ms": 6965.0
+    },
+    {
+      "clip": "normal_a",
+      "behavior": "normal",
+      "people": 6,
+      "activity": "calm",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 228,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.996,
+          "recall": 0.991,
+          "f1": 0.993
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 6,
+        "unmatched_tracks": 0,
+        "tracks": 6
+      },
+      "pipeline_ms": 6663.7,
+      "wall_ms": 6664.6
+    },
+    {
+      "clip": "normal_b",
+      "behavior": "normal",
+      "people": 5,
+      "activity": "calm",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 184,
+          "fp": 2,
+          "fn": 2,
+          "precision": 0.989,
+          "recall": 0.989,
+          "f1": 0.989
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unmatched_tracks": 0,
+        "tracks": 5
+      },
+      "pipeline_ms": 5929.4,
+      "wall_ms": 5930.2
+    },
+    {
+      "clip": "normal_c",
+      "behavior": "normal",
+      "people": 7,
+      "activity": "calm",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 252,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.984,
+          "recall": 0.992,
+          "f1": 0.988
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "tn": 7,
+        "unmatched_tracks": 0,
+        "tracks": 8
+      },
+      "pipeline_ms": 7268.4,
+      "wall_ms": 7269.4
+    },
+    {
+      "clip": "normal_d",
+      "behavior": "normal",
+      "people": 4,
+      "activity": "calm",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 121,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unmatched_tracks": 0,
+        "tracks": 5
+      },
+      "pipeline_ms": 7071.5,
+      "wall_ms": 7072.1
+    },
+    {
+      "clip": "smoke_normal",
+      "behavior": "normal",
+      "people": 7,
+      "activity": "calm",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "smoke": {
+          "tp": 237,
+          "fp": 2,
+          "fn": 5,
+          "precision": 0.992,
+          "recall": 0.979,
+          "f1": 0.985
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 8,
+        "unmatched_tracks": 1,
+        "tracks": 9
+      },
+      "pipeline_ms": 10142.9,
+      "wall_ms": 16189.4
+    },
+    {
+      "clip": "tampered",
+      "behavior": "normal",
+      "people": 5,
+      "activity": "unusable",
+      "candidate_event": false,
+      "weapon_like": 0,
+      "detection_iou50": {
+        "clean": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "degraded": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 137,
+          "precision": null,
+          "recall": 0.0,
+          "f1": null
+        }
+      },
+      "running_tracks": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unmatched_tracks": 0,
+        "tracks": 5
+      },
+      "pipeline_ms": 6915.5,
+      "wall_ms": 6916.0
+    }
+  ]
+}

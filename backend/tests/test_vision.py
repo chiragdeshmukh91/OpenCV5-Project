@@ -134,3 +134,29 @@ def test_no_firearm_class_honesty_guarantee():
     assert det_mod.WEAPON_LIKE_COCO <= set(det_mod.COCO_CLASSES)
     assert det_mod.WEAPON_LIKE_COCO == {"knife", "baseball bat", "scissors"}
     assert det_mod.get_weapon_detector() is None
+
+
+# ------------------------------------------------------------------------------- evidence visibility (regression)
+def test_evidence_frames_are_native_resolution(analysis):
+    """Evidence frames used to be downscaled to 480 px at JPEG q72, too small to see who triggered an event."""
+    import base64
+    r = analysis("flight_left_a")
+    W, H = r["frame_size"]
+    assert r["preview_width"] == W  # 768 px source: kept at native size, never upscaled
+    img = cv.imdecode(np.frombuffer(base64.b64decode(r["frames_jpeg_b64"][0]), np.uint8), cv.IMREAD_COLOR)
+    assert img.shape[1] == W and img.shape[0] == H
+
+
+def test_running_tracks_and_key_frame_explain_flight(analysis):
+    r = analysis("flight_left_a")
+    m = r["motion"]
+    running = [t for t in m["tracks_detail"] if t["running"]]
+    assert running and m["running_track_ids"] == sorted(t["id"] for t in running)
+    assert all(t["speed_bh_s"] > 2.0 for t in running)
+    kf = r["key_frame"]
+    rec = r["per_frame"][kf]
+    assert rec["detected"]
+    # the key frame actually shows boxes belonging to running tracks
+    assert any(d.get("track") in set(m["running_track_ids"]) for d in rec["detections"])
+    calm = analysis("normal_a")["motion"]
+    assert not [t for t in calm["tracks_detail"] if t["running"]] or calm["running_fraction"] < 0.5

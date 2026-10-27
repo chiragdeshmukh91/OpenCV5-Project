@@ -104,6 +104,15 @@ def _paste(canvas: np.ndarray, s: Sprite, x: float, foot_y: float) -> None:
     canvas[y0 + sy0:y0 + ey, x0 + sx0:x0 + ex] = roi.astype(np.uint8)
 
 
+def _gt_box(s: Sprite, x: float, foot_y: float, W: int, H: int, agent_id: int) -> dict:
+    """Same placement arithmetic as _paste, returned as a clipped box with its visible fraction."""
+    h, w = s.rgb.shape[:2]
+    x0, y0 = int(round(x - w / 2)), int(round(foot_y - h))
+    cx0, cy0, cx1, cy1 = max(0, x0), max(0, y0), min(W, x0 + w), min(H, y0 + h)
+    vis = max(0, cx1 - cx0) * max(0, cy1 - cy0) / float(w * h)
+    return {"agent": agent_id, "box": [cx0, cy0, max(0, cx1 - cx0), max(0, cy1 - cy0)], "visible": round(vis, 3)}
+
+
 def render_clip(plate: np.ndarray, sprites: list[Sprite], spec: dict, out_path: Path, seed: int = 0) -> dict:
     """Render a clip described by `spec` and return its ground-truth metadata."""
     rng = np.random.default_rng(seed)
@@ -135,18 +144,22 @@ def render_clip(plate: np.ndarray, sprites: list[Sprite], spec: dict, out_path: 
             sign = 1 if rng.random() < 0.5 else -1
             vx = sign * rng.uniform(0.7, 1.2) * s.height
             x = rng.uniform(0, W)
-        agents.append({"s": s, "x": x, "vx": vx, "phase": rng.uniform(0, 6.28)})
+        agents.append({"id": i, "s": s, "x": x, "vx": vx, "phase": rng.uniform(0, 6.28)})
 
     writer = cv.VideoWriter(str(out_path), cv.VideoWriter_fourcc(*"MJPG"), FPS, (W, H))
     frozen = None
+    frozen_gt: list[dict] | None = None
+    gt_frames: list[dict] = []
     for t in range(N_FRAMES):
         frame = base.copy()
+        boxes: list[dict] = []
         for a in sorted(agents, key=lambda a: a["s"].foot_y):
             x = a["x"] + a["vx"] * t / FPS
             if behavior == "normal":
                 x = x % (W + 120) - 60  # wrap around so the scene stays populated
             bob = 3 * math.sin(a["phase"] + t * (1.6 if abs(a["vx"]) > 2 * a["s"].height else 0.8))
             _paste(frame, a["s"], x, a["s"].foot_y + bob)
+            boxes.append(_gt_box(a["s"], x, a["s"].foot_y + bob, W, H, a["id"]))
         frame = np.clip(frame.astype(np.float32) + rng.normal(0, 2.5, frame.shape), 0, 255).astype(np.uint8)
         if behavior == "tampered" or spec.get("tamper_after") is not None:
             k = int(spec.get("tamper_after", 0.3) * N_FRAMES)
@@ -158,20 +171,42 @@ def render_clip(plate: np.ndarray, sprites: list[Sprite], spec: dict, out_path: 
             haze = cv.GaussianBlur(rng.normal(190, 20, frame.shape[:2]).astype(np.float32), (0, 0), 25)
             haze = np.repeat(haze[..., None], 3, 2)
             frame = np.clip(frame.astype(np.float32) * (1 - a) + haze * a, 0, 255).astype(np.uint8)
+        degraded = bool((behavior == "tampered" or spec.get("tamper_after") is not None)
+                        and t >= int(spec.get("tamper_after", 0.3) * N_FRAMES))
         if spec.get("frozen"):
             if frozen is None and t == 2:
                 frozen = frame.copy()
+                frozen_gt = boxes
             if frozen is not None:
                 frame = frozen
+                boxes = frozen_gt or []
+        gt_frames.append({"index": t, "boxes": [b for b in boxes if b["visible"] > 0], "degraded": degraded,
+                          "smoke_alpha": round(min(0.72, spec["smoke"] * (0.5 + t / N_FRAMES)), 3) if spec.get("smoke") else 0.0})
         writer.write(frame)
     writer.release()
+    # Per-frame ground-truth person boxes (known exactly because the clip is a composite). Used by
+    # evaluation/run_detection_eval.py. Boxes are the pasted sprite rectangles clipped to the frame.
+    out_path.with_suffix(".gt.json").write_text(json.dumps(
+        {"clip": out_path.stem, "frame_size": [W, H], "fps": FPS, "behavior": behavior, "people": n,
+         "agents": [{"id": a["id"], "speed_bh_s": round(abs(a["vx"]) / a["s"].height, 3), "height_px": a["s"].height}
+                    for a in agents],
+         "note": "sprite rectangles (detector crops incl. margin), clipped to the frame; 'visible' = in-frame area "
+                 "fraction; occlusion between sprites is not modelled", "frames": gt_frames}))
     return {
         "file": out_path.name,
         "synthetic": True,
         "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
         "spec": spec,
+        # Where the footage was actually filmed. The plate is OpenCV's outdoor pedestrian sample, so these clips
+        # are NOT recordings from any school camera; the agent must not treat the camera's mount zone as the
+        # location of the people seen in them without a human confirming it.
+        "scene": dict(SCENE),
         "ground_truth": {"behavior": behavior, "people": n, "direction": direction if behavior == "flight" else None},
     }
+
+
+SCENE = {"environment": "outdoor", "recorded_by_camera": None,
+         "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"}
 
 
 def generate_all(src: Path, out_dir: Path, clip_specs: dict[str, dict], detector) -> dict:

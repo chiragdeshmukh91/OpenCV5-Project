@@ -11,15 +11,20 @@ import { LabPage } from './components/story/LabPage';
 import { IntelPage } from './components/story/IntelPage';
 import { HistoryPage } from './components/story/HistoryPage';
 import { ScenePage } from './components/scene/ScenePage';
+import { StartPage } from './components/StartPage';
+import { EvidenceReview } from './components/EvidenceReview';
 import { isPerceiveAnalysis } from './lib/format';
 import { cx } from './components/ui';
+import { initialPage } from './lib/startup';
 
 const PAGE_IDS = new Set<PageId>(NAV.map((n) => n.id));
 
 function pageFromHash(): PageId {
   const h = window.location.hash.replace(/^#\/?/, '') as PageId;
-  return PAGE_IDS.has(h) ? h : 'operations';
+  return PAGE_IDS.has(h) ? h : 'start';
 }
+
+
 
 export default function App() {
   const { building, scenarios, footage, error: staticError, reloadFootage } = useStaticData();
@@ -29,7 +34,9 @@ export default function App() {
   const now = useNow(500, active);
   const session = useSessionRuns();
 
-  const [page, setPage] = useState<PageId>(pageFromHash);
+  const [page, setPage] = useState<PageId>(() => initialPage<PageId>('start'));
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewCamera, setReviewCamera] = useState<string | null>(null);
   const [scenarioId, setScenarioId] = useState('');
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [inputsOpen, setInputsOpen] = useState(false);
@@ -89,17 +96,20 @@ export default function App() {
   const startRun = useCallback(
     async (sid?: string) => {
       const id = sid ?? scenarioId;
-      if (!id) return;
+      if (!id) return false;
       setStarting(true);
       setActionError(null);
+      setReviewOpen(false);
       try {
         const { run_id } = await api.startRun(id, overrides);
         session.add(run_id, scenarios?.scenarios.find((s) => s.id === id)?.title ?? id);
         setFollow(true);
         setSelectedAnalysis(null);
         refresh();
+        return true;
       } catch (e) {
         setActionError(e instanceof Error ? e.message : String(e));
+        return false;
       } finally {
         setStarting(false);
       }
@@ -160,8 +170,16 @@ export default function App() {
       sessionRuns: session.runs,
       historyRunId,
       openHistory: setHistoryRunId,
+      reviewOpen,
+      reviewCamera,
+      openReview: (cid?: string | null) => {
+        setReviewCamera(cid ?? null);
+        setReviewOpen(true);
+      },
+      closeReview: () => setReviewOpen(false),
+      goToStart: () => navigate('start'),
     }),
-    [building, run, scenarios, footage, status, now, scenarioId, overrides, reloadFootage, startRun, cancelRun, starting, refresh, navigate, selectedCamera, selectedAnalysis, selectCamera, openAnalysis, follow, selectedZone, session.runs, historyRunId],
+    [building, run, scenarios, footage, status, now, scenarioId, overrides, reloadFootage, startRun, cancelRun, starting, refresh, navigate, selectedCamera, selectedAnalysis, selectCamera, openAnalysis, follow, selectedZone, session.runs, historyRunId, reviewOpen, reviewCamera],
   );
 
   const unreachable = staticError ?? (runError && !run ? runError : null);
@@ -184,10 +202,13 @@ export default function App() {
     case 'history':
       content = <HistoryPage />;
       break;
+    case 'start':
+      content = <StartPage staticError={staticError} />;
+      break;
     default:
       content = <ScenePage />;
   }
-  const meta = page !== 'operations' ? PAGE_META[page] : null;
+  const meta = page !== 'operations' && page !== 'start' ? PAGE_META[page] : null;
 
   return (
     <AppContext.Provider value={ctx}>
@@ -200,7 +221,7 @@ export default function App() {
             scenarios={scenarios?.scenarios ?? []}
             scenarioId={scenarioId}
             onScenario={setScenarioId}
-            onRun={() => void startRun()}
+            onRun={() => void startRun().then((ok) => ok && navigate('operations'))}
             onCancel={() => void cancelRun()}
             run={run}
             starting={starting}
@@ -231,11 +252,12 @@ export default function App() {
         </div>
         <div className="flex min-h-0 flex-1">
           <Sidebar page={page} onNavigate={navigate} collapsed={collapsed} onToggleCollapsed={() => setCollapsed((c) => !c)} mobileOpen={mobileNav} onCloseMobile={() => setMobileNav(false)} />
-          <main id="main" tabIndex={-1} className={cx('flex min-w-0 flex-1 flex-col outline-none wide:min-h-0 wide:overflow-hidden', page === 'operations' ? 'p-0' : 'p-3')} key={page}>
+          <main id="main" tabIndex={-1} className={cx('flex min-w-0 flex-1 flex-col outline-none wide:min-h-0', page === 'start' ? 'wide:overflow-y-auto' : 'wide:overflow-hidden', page === 'operations' || page === 'start' ? 'p-0' : 'p-3')} key={page}>
             {meta && <PageTitle icon={meta.icon} title={meta.title} sub={meta.sub} />}
             <div className="fade-in min-h-0 flex-1">{content}</div>
           </main>
         </div>
+        {reviewOpen && <EvidenceReview key={reviewCamera ?? 'first'} initialCamera={reviewCamera} onClose={() => setReviewOpen(false)} />}
         <StatusBar run={run} totalCameras={building?.cameras.length ?? 0} updatedAt={updatedAt} error={runError} />
       </div>
     </AppContext.Provider>

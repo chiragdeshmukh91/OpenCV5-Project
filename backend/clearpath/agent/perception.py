@@ -45,6 +45,8 @@ class Evidence:
     consistency: dict[str, Any] = field(default_factory=dict)
     enhanced: bool = False
     analysis_id: str | None = None
+    # Where the observation happened (see agent/location.py). Unverified -> not applied to the belief.
+    location: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         d = dict(self.__dict__)

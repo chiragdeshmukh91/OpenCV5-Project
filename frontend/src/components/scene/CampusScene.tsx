@@ -209,6 +209,7 @@ export function CampusScene({
           onSelectZone={onSelectZone}
           onBuildingClick={onBuildingClick}
           onEnterFloor={onEnterFloor}
+          tone={run?.belief?.localized ? 'threat' : 'caution'}
         />
         <LiveLayers
           b={b}

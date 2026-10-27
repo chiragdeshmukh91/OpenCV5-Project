@@ -46,7 +46,8 @@ def resolve_clip(clip_id: str) -> Path:
     p = FOOTAGE_DIR / f"{clip_id}.avi"
     if aws.fetch_footage(p.name, p):
         return p
-    raise HTTPException(404, f"clip '{clip_id}' not found")
+    raise HTTPException(404, f"clip '{clip_id}' not found in {FOOTAGE_DIR}; synthetic clips are generated, not committed: "
+                             f"run `python scripts/generate_footage.py` in backend/")
 
 
 def _finish(result: dict, t0: float) -> dict:

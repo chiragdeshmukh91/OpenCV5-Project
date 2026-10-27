@@ -58,12 +58,12 @@
     {"id": "D-R107", "a": "R107", "b": "C3", "position": [83,22], "width_m": 0.95, "kind": "lockable"}
   ],
   "cameras": [
-    {"id": "CAM-01", "name": "West Hall", "zone": "C1", "position": [15,25], "covers": ["C1"], "image_right_heading_deg": 0, "yaw_deg": 90},
-    {"id": "CAM-02", "name": "Central Hall", "zone": "C2", "position": [40,25], "covers": ["C2"], "image_right_heading_deg": 0, "yaw_deg": 90},
-    {"id": "CAM-03", "name": "East Hall", "zone": "C3", "position": [75,25], "covers": ["C3"], "image_right_heading_deg": 0, "yaw_deg": 90},
-    {"id": "CAM-04", "name": "North Wing Hall", "zone": "C4", "position": [45,39], "covers": ["C4"], "image_right_heading_deg": 90, "yaw_deg": 180},
-    {"id": "CAM-05", "name": "Main Lobby", "zone": "LOBBY", "position": [34,14], "covers": ["LOBBY"], "image_right_heading_deg": 270, "yaw_deg": 0},
-    {"id": "CAM-06", "name": "Cafeteria", "zone": "CAF", "position": [54,14], "covers": ["CAF"], "image_right_heading_deg": 0, "yaw_deg": 90},
-    {"id": "CAM-07", "name": "Gymnasium", "zone": "GYM", "position": [60,39], "covers": ["GYM"], "image_right_heading_deg": 0, "yaw_deg": 90}
+    {"id": "CAM-01", "name": "West Hall", "zone": "C1", "position": [15,25], "covers": ["C1"], "image_right_heading_deg": 0, "yaw_deg": 90, "environment": "indoor"},
+    {"id": "CAM-02", "name": "Central Hall", "zone": "C2", "position": [40,25], "covers": ["C2"], "image_right_heading_deg": 0, "yaw_deg": 90, "environment": "indoor"},
+    {"id": "CAM-03", "name": "East Hall", "zone": "C3", "position": [75,25], "covers": ["C3"], "image_right_heading_deg": 0, "yaw_deg": 90, "environment": "indoor"},
+    {"id": "CAM-04", "name": "North Wing Hall", "zone": "C4", "position": [45,39], "covers": ["C4"], "image_right_heading_deg": 90, "yaw_deg": 180, "environment": "indoor"},
+    {"id": "CAM-05", "name": "Main Lobby", "zone": "LOBBY", "position": [34,14], "covers": ["LOBBY"], "image_right_heading_deg": 270, "yaw_deg": 0, "environment": "indoor"},
+    {"id": "CAM-06", "name": "Cafeteria", "zone": "CAF", "position": [54,14], "covers": ["CAF"], "image_right_heading_deg": 0, "yaw_deg": 90, "environment": "indoor"},
+    {"id": "CAM-07", "name": "Gymnasium", "zone": "GYM", "position": [60,39], "covers": ["GYM"], "image_right_heading_deg": 0, "yaw_deg": 90, "environment": "indoor"}
   ]
 }

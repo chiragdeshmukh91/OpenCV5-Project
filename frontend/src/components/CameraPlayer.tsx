@@ -4,18 +4,17 @@ import type { Analysis, Camera, CameraState } from '../types';
 import { heldDetections, enhanceLabel } from '../lib/format';
 import { imageDirToCanvas } from '../lib/geometry';
 import { cx } from './ui';
+import { overlayScale, runningIds, styleDetection } from '../lib/evidence';
 
-const PERSON = '#67e8f9';
-const WEAPON = '#fbbf24';
-
-function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string) {
-  ctx.font = '600 10px Inter, system-ui, sans-serif';
-  const w = ctx.measureText(text).width + 6;
-  const ty = Math.max(0, y - 13);
-  ctx.fillStyle = 'rgba(7,9,13,0.78)';
-  ctx.fillRect(x, ty, w, 13);
+function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string, font = 11) {
+  ctx.font = `700 ${font}px Inter, system-ui, sans-serif`;
+  const w = ctx.measureText(text).width + 8;
+  const hh = font + 5;
+  const ty = Math.max(0, y - hh);
+  ctx.fillStyle = 'rgba(7,9,13,0.85)';
+  ctx.fillRect(x, ty, w, hh);
   ctx.fillStyle = color;
-  ctx.fillText(text, x + 3, ty + 10);
+  ctx.fillText(text, x + 4, ty + hh - 4);
 }
 
 export function CameraPlayer({
@@ -142,19 +141,15 @@ export function CameraPlayer({
     if (img) ctx.drawImage(img, 0, 0, w, h);
     if (!overlays) return;
     const s = w / W;
-    for (const d of dets) {
-      const [x, y, bw, bh] = d.box;
-      const isPerson = d.cls === 'person';
-      const col = isPerson ? PERSON : WEAPON;
-      ctx.lineWidth = isPerson ? 1.25 : 2;
-      ctx.strokeStyle = col;
-      ctx.globalAlpha = isPerson ? 0.9 : 1;
+    const { line, font } = overlayScale(w);
+    const running = runningIds(analysis);
+    for (const sd of dets.map((d) => styleDetection(d, analysis, running))) {
+      const [x, y, bw, bh] = sd.det.box;
+      ctx.lineWidth = sd.kind === 'person' ? line : line + 1;
+      ctx.strokeStyle = sd.color;
       ctx.strokeRect(x * s + 0.5, y * s + 0.5, bw * s, bh * s);
-      ctx.globalAlpha = 1;
-      const label = isPerson
-        ? `${d.track != null ? `#${d.track} ` : ''}${d.score.toFixed(2)}`
-        : `${d.cls.replace(/_/g, ' ')} ${d.score.toFixed(2)}`;
-      drawLabel(ctx, label, x * s, y * s, col);
+      // small previews: label only the boxes that matter (running tracks, weapon-like objects)
+      if (sd.kind !== 'person' || w >= 520) drawLabel(ctx, sd.kind === 'running' ? 'RUNNING' : sd.label, x * s, y * s, sd.color, font - 1);
     }
     const m = analysis.motion;
     if (m && m.direction_image_deg != null && m.coherence > 0) {

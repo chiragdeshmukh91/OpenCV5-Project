@@ -114,6 +114,8 @@
         "CAM-07": "empty_b"
       },
       "expected": {
+        "_note": "primary_option/threat_region: after a reviewer confirms the camera observations' locations. before_confirmation: the footage is not verified as recorded at the cameras, so only the report prior is used.",
+        "before_confirmation": "LOCKDOWN",
         "primary_option": "HOLD",
         "threat_region": null
       }
@@ -138,6 +140,8 @@
         "CAM-07": "flight_left_a"
       },
       "expected": {
+        "_note": "primary_option/threat_region: after a reviewer confirms the camera observations' locations. before_confirmation: the footage is not verified as recorded at the cameras, so only the report prior is used.",
+        "before_confirmation": "LOCKDOWN",
         "primary_option": "LOCKDOWN_PLUS_EVACUATE",
         "threat_region": [
           "C3",
@@ -168,6 +172,8 @@
         "CAM-07": "smoke_normal"
       },
       "expected": {
+        "_note": "primary_option/threat_region: after a reviewer confirms the camera observations' locations. before_confirmation: the footage is not verified as recorded at the cameras, so only the report prior is used.",
+        "before_confirmation": "LOCKDOWN",
         "primary_option": "LOCKDOWN",
         "threat_region": null
       }
@@ -192,6 +198,8 @@
         "CAM-07": "normal_c"
       },
       "expected": {
+        "_note": "primary_option/threat_region: after a reviewer confirms the camera observations' locations. before_confirmation: the footage is not verified as recorded at the cameras, so only the report prior is used.",
+        "before_confirmation": "LOCKDOWN",
         "primary_option": "LOCKDOWN_PLUS_EVACUATE",
         "threat_region": [
           "C1",

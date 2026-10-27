@@ -42,6 +42,7 @@ import { CameraPlayer } from '../CameraPlayer';
 import { ACTIVITY_TEXT } from '../CameraWall';
 import { ProcedureLabel } from '../ops';
 import { cx } from '../ui';
+import { pendingObservations } from '../../lib/observations';
 import { Dot, Ring, Sparkline, StageTag, TONE_TEXT } from '../viz';
 import { DEFAULT_LAYERS, type Layers } from './LiveLayers';
 import { incidentZones, zoneHeat } from '../Twin';
@@ -104,7 +105,7 @@ export function Float({
 
 // ------------------------------------------------------------------ incident
 export function IncidentFloat() {
-  const { run, now, startRun, starting, scenarios, scenarioId, navigate } = useApp();
+  const { run, now, startRun, starting, scenarios, scenarioId, navigate, openReview } = useApp();
   const [more, setMore] = useState(false);
   if (!run) {
     const sc = scenarios.find((s) => s.id === scenarioId);
@@ -160,16 +161,35 @@ export function IncidentFloat() {
             <div className="tnum text-[13px] font-semibold text-ink-100">{elapsed(sec)}</div>
           </div>
           <div className="min-w-0">
-            <div className="text-[9.5px] uppercase tracking-wider text-ink-400">Region</div>
-            <div className="truncate font-mono text-[12px] font-semibold text-ink-100" title={b?.region.join(', ')}>
-              {b ? (b.region.length > 3 ? `${b.region.slice(0, 3).join(' ')} +${b.region.length - 3}` : b.region.join(' ')) : '—'}
-            </div>
+            <div className="text-[9.5px] uppercase tracking-wider text-ink-400">{b?.localized ? 'Threat region' : 'Location'}</div>
+            {b?.localized ? (
+              <div className="truncate font-mono text-[12px] font-semibold text-threat-bright" title={`${b.region.join(', ')} — from camera observations with a verified or human-confirmed location`}>
+                {b.region.length > 3 ? `${b.region.slice(0, 3).join(' ')} +${b.region.length - 3}` : b.region.join(' ')}
+              </div>
+            ) : (
+              <div className="truncate text-[11.5px] font-semibold text-caution-bright" title={`Not localised by cameras. The report names ${run.scenario.trigger.zone}; that claim is unverified.`}>
+                Unknown <span className="font-mono font-normal text-ink-300">(report: {run.scenario.trigger.zone})</span>
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-end">
             <div className="text-[9.5px] uppercase tracking-wider text-ink-400">Trend</div>
             <Sparkline values={run.belief_history.map((h) => h.p_threat)} width={70} height={20} color={prio.tone === 'threat' ? '#ef4444' : '#f59e0b'} ariaLabel="P(threat) trend" />
           </div>
         </div>
+        {(() => {
+          const pend = pendingObservations(run);
+          const events = pend.filter((o) => o.kind === 'candidate_event').length;
+          if (run.status !== 'awaiting_review' || !pend.length) return null;
+          return (
+            <button type="button" onClick={() => openReview(null)} className="mt-2.5 flex w-full items-center justify-between gap-2 rounded-lg border border-caution/50 bg-caution-dim/50 px-2.5 py-1.5 text-left text-[11.5px] text-caution-bright hover:bg-caution-dim/80">
+              <span>
+                <b>Next:</b> review {events ? `${events} candidate event${events === 1 ? '' : 's'}` : `${pend.length} observation${pend.length === 1 ? '' : 's'}`} — location unknown until you confirm
+              </span>
+              <ChevronRight size={14} />
+            </button>
+          );
+        })()}
         {more && <p className="fade-in mt-2.5 border-t border-white/5 pt-2.5 text-[11.5px] leading-relaxed text-ink-300">{composeSummary(run)}</p>}
       </div>
     </Float>
@@ -178,7 +198,7 @@ export function IncidentFloat() {
 
 // ------------------------------------------------------------------ review
 export function ReviewFloat() {
-  const { run, building, refresh, openAnalysis, navigate } = useApp();
+  const { run, building, refresh, openAnalysis, navigate, openReview } = useApp();
   const [reviewer, setReviewer] = useState('Safety lead');
   const [note, setNote] = useState('');
   const [exitId, setExitId] = useState('');
@@ -243,10 +263,21 @@ export function ReviewFloat() {
       }
     >
       <div className="space-y-2.5 p-3">
+        {(() => {
+          const pend = pendingObservations(run);
+          return (
+            <button type="button" onClick={() => openReview(pend[0]?.camera_id ?? null)} className={cx('flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[12px] font-semibold', pend.length && awaiting ? 'border-caution bg-caution/20 text-caution-bright shadow-[0_0_18px_-6px_rgba(245,158,11,0.7)]' : 'border-accent/40 bg-accent/10 text-accent-bright')}>
+              <ScanSearch size={15} />
+              <span className="flex-1">{pend.length && awaiting ? `Review evidence · ${pend.length} pending` : 'Open evidence review'}</span>
+              <ChevronRight size={14} />
+            </button>
+          );
+        })()}
         <div>
           <div className="text-[10px] uppercase tracking-wider text-ink-400">{run.approved_option ? 'Approved (simulated)' : 'Recommended'}</div>
           <ProcedureLabel id={run.approved_option ?? recId} className="text-[18px] text-accent-bright [text-shadow:0_0_18px_rgba(34,211,238,0.45)]" />
           {rec && <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-ink-300" title={rec.description}>{rec.description}</p>}
+          {run.assessment?.no_feasible_alternative && <p className="mt-1 rounded-md bg-caution-dim/50 px-2 py-1 text-[10.5px] leading-snug text-caution-bright">{run.assessment.uncertainty[0]}</p>}
         </div>
         {support.length > 0 && (
           <div className="grid grid-cols-4 gap-1">
@@ -257,7 +288,10 @@ export function ReviewFloat() {
                 <button
                   key={aid}
                   type="button"
-                  onClick={() => openAnalysis(a.camera_id, aid)}
+                  onClick={() => {
+                    openAnalysis(a.camera_id, aid);
+                    openReview(a.camera_id);
+                  }}
                   aria-label={`Open evidence ${aid}`}
                   title={`${a.camera_id} · ${act ?? ''}`}
                   className={cx('relative aspect-[4/3] overflow-hidden rounded-md border transition-all hover:shadow-glow-cyan', act === 'flight' ? 'border-threat/60' : 'border-white/10 hover:border-accent')}
@@ -309,6 +343,10 @@ export function ReviewFloat() {
                 </div>
               </div>
             )}
+            <p className="col-span-2 text-[10.5px] leading-snug text-ink-400">
+              Approve records your decision and ends the run (actions logged as SIMULATED). Reject excludes this option; the agent proposes the next one.
+              {pendingObservations(run).length > 0 && <span className="text-caution-bright"> {pendingObservations(run).length} observation(s) unreviewed — not used by this recommendation.</span>}
+            </p>
             {err && <div className="col-span-2 text-[11px] text-caution-bright">{err}</div>}
           </div>
         )}
@@ -436,6 +474,7 @@ export function TimelineStrip({ open, onToggle }: { open: boolean; onToggle: () 
                   <span className="mt-0.5 line-clamp-2 text-[11px] leading-tight text-ink-100" title={it.title}>
                     {it.title}
                   </span>
+                  {it.locationUnknown && <span className="mt-0.5 block truncate text-[9px] font-semibold text-caution-bright">location unknown</span>}
                   {it.zones.length > 0 && (
                     <span className="mt-0.5 block truncate font-mono text-[9px]">
                       {it.zones.map((z) => (
@@ -582,7 +621,7 @@ export function ZonePanel({ zoneId, onClose, onSelectCamera }: { zoneId: string;
 
 // ------------------------------------------------------------------ camera feed panel
 export function CameraFeedPanel({ onClose, focused }: { onClose?: () => void; focused: boolean }) {
-  const { building, run, selectedCamera, selectedAnalysis, openAnalysis, follow, setFollow, scenarios, scenarioId, overrides, navigate } = useApp();
+  const { building, run, selectedCamera, selectedAnalysis, openAnalysis, follow, setFollow, scenarios, scenarioId, overrides, navigate, openReview } = useApp();
   const cam = building?.cameras.find((c) => c.id === selectedCamera) ?? building?.cameras[0];
   if (!cam) return null;
   const analyses = run ? Object.values(run.analyses).filter((a) => a.camera_id === cam.id) : [];
@@ -643,6 +682,16 @@ export function CameraFeedPanel({ onClose, focused }: { onClose?: () => void; fo
                 <div className="text-[9px] uppercase tracking-wider text-ink-400">{k}</div>
               </div>
             ))}
+          </div>
+        )}
+        {analysis && (
+          <button type="button" className="btn-primary w-full py-1.5 text-[12px]" onClick={() => openReview(cam.id)}>
+            <Maximize2 size={13} /> Inspect footage full-size
+          </button>
+        )}
+        {st?.evidence?.location && (
+          <div className={cx('rounded-md px-2 py-1 text-[10.5px]', st.evidence.location.zone ? 'bg-clear-dim/40 text-clear-bright' : 'bg-caution-dim/40 text-caution-bright')}>
+            Location: {st.evidence.location.zone ? `${st.evidence.location.zone} (${st.evidence.location.status.replace('_', '-')})` : `unknown — camera mounted in ${st.evidence.location.camera_zone}`}
           </div>
         )}
         <div className="flex items-center gap-2 text-[10.5px] text-ink-400">
@@ -854,7 +903,7 @@ export function PlanSVG({ b, run, selectedZone, onZone }: { b: Building; run: Ru
         <polygon
           key={z.id}
           points={pts(z.polygon)}
-          fill={hot.has(z.id) ? '#b91c1c' : threatColor(pz[z.id], maxP)}
+          fill={hot.has(z.id) ? (run?.belief?.localized ? '#b91c1c' : '#b45309') : threatColor(pz[z.id], maxP)}
           stroke={selectedZone === z.id ? '#a5f3fc' : '#22d3ee'}
           strokeOpacity={selectedZone === z.id ? 1 : 0.4}
           strokeWidth={0.4}

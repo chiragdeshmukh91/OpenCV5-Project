@@ -87,8 +87,17 @@ def agent_eval() -> list[dict]:
         run = m.start(scen["id"], step_delay=0, background=True)
         while run.state["status"] == "running":
             time.sleep(0.3)
+        before = run.snapshot()
+        # Footage is not verified as recorded at the cameras, so the first recommendation uses the report prior only.
+        # Then a reviewer confirms every pending observation's location (one decision) and the agent re-assesses.
+        pending = sorted(run.pending)
+        if pending:
+            run.submit_review({"action": "confirm_observation", "camera_ids": pending, "reviewer": "eval"})
+            while not (run.state["status"] == "awaiting_review" and len(run.state["review_history"]) == 1):
+                time.sleep(0.3)
         st = run.snapshot()
         run.cancelled = True
+        before_rec = before["assessment"]["recommended"] if before["assessment"] else None
         b = st["belief"]
         exp = scen["expected"]
         region_ok = None
@@ -98,6 +107,9 @@ def agent_eval() -> list[dict]:
         naive = naive_baseline(scen)
         rows.append({
             "scenario": scen["id"], "expected": exp["primary_option"], "recommended": rec,
+            "before_confirmation": before_rec, "expected_before": exp.get("before_confirmation"),
+            "before_correct": before_rec == exp.get("before_confirmation"),
+            "localized_before": before["belief"]["localized"], "observations_confirmed": len(pending),
             "correct": rec == exp["primary_option"], "region": b["region"], "region_correct": region_ok,
             "p_threat": b["p_threat"], "localized": b["localized"], "cameras_analysed": len({a["camera_id"] for a in st["analyses"].values()}),
             "vision_calls": st["metrics"]["vision_calls"], "reanalyses": st["metrics"]["reanalyses"],
@@ -106,7 +118,7 @@ def agent_eval() -> list[dict]:
             "human_review_requested": st["status"] == "awaiting_review",
             "naive_baseline": naive, "naive_correct": naive == exp["primary_option"],
         })
-        print(f"  {scen['id']:<32} expected {exp['primary_option']:<24} agent {rec:<24} naive {naive}")
+        print(f"  {scen['id']:<32} before {before_rec:<10} expected {exp['primary_option']:<24} agent {rec:<24} naive {naive}")
     return rows
 
 
@@ -125,18 +137,24 @@ def write_markdown(perc: list[dict], agent: list[dict], meta: dict, out: Path) -
     for r in perc:
         L.append(f"| {r['clip']} | {r['expected']} | {r['observed']} | {r['after_dehaze'] or '—'} | {r['people_true']} / {r['people_median']:.0f} / {r['people_max']} | "
                  f"{r['speed_bh_s'] if r['speed_bh_s'] is not None else '—'} | {r['coherence']:.2f} | {r['reliability']:.2f} | {', '.join(r['issues']) or '—'} | {r['ms']:.0f} |")
-    L += ["", "## Agent (end-to-end, until human review)", "",
+    bc = sum(r["before_correct"] for r in agent)
+    L += ["", "## Agent (end-to-end, with human review of observation locations)", "",
+          "The footage is replayed sample video (an outdoor plaza), not recorded by the school's cameras, so the agent does "
+          "not use a camera's mount zone as the observation's location. Before review, no observation moves the threat map "
+          f"(**{sum(not r['localized_before'] for r in agent)}/{len(agent)}** runs unlocalised; first recommendation matches "
+          f"the report-prior expectation in **{bc}/{len(agent)}**). After a reviewer confirms the observations' locations:", "",
           f"Recommendation matches expectation: **{ac}/{len(agent)}** scenarios. Naive baseline (\"evacuate on any weapon report\"): **{nc}/{len(agent)}**.", "",
-          "| Scenario | Expected | Agent | Naive baseline | P(threat) | Region (correct?) | Cameras used / 7 | Re-analyses | Faults → gaps | Steps | Wall s |",
-          "|---|---|---|---|---|---|---|---|---|---|---|"]
+          "| Scenario | Before review | Expected (after) | Agent (after) | Naive baseline | P(threat) | Region (correct?) | Cameras used / 7 | Re-analyses | Faults → gaps | Steps | Wall s |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in agent:
         reg = f"{', '.join(r['region'])} ({'yes' if r['region_correct'] else 'no'})" if r["region_correct"] is not None else "n/a (not localised)"
-        L.append(f"| {r['scenario']} | {r['expected']} | {r['recommended']} | {r['naive_baseline']} | {r['p_threat']:.2f} | {reg} | {r['cameras_analysed']} | {r['reanalyses']} | "
+        L.append(f"| {r['scenario']} | {r['before_confirmation']} | {r['expected']} | {r['recommended']} | {r['naive_baseline']} | {r['p_threat']:.2f} | {reg} | {r['cameras_analysed']} | {r['reanalyses']} | "
                  f"{r['faults']} → {', '.join(r['gaps']) or '—'} | {r['steps']} | {r['wall_s']} |")
     L += ["", "Every run paused for human review before any (simulated) action: "
           + ("yes" if all(r["human_review_requested"] for r in agent) else "NO") + ".", "",
           "## Limitations", "",
           "- Footage is synthetic; sprites are real pedestrians but motion is composited, so this measures the pipeline and the agent logic, not field accuracy.",
+          "- Observation locations are confirmed by a human in this evaluation; no camera calibration or site-registered footage exists, so location accuracy is not measured.",
           "- The detector is COCO YOLOX; it has no firearm class. CLEARPATH never claims a firearm detection; weapon-like COCO classes only trigger a persistence check and a human-verification task.",
           "- Activity thresholds (running ≥ 2 body-heights/s, coherence ≥ 0.6) were set on these clips and need validation on real footage.",
           "- Likelihood ratios in the belief update are hand-set, documented constants, not learned from data."]

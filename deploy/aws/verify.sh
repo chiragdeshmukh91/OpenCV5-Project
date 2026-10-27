@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Prove the deployment works and that the OpenCV workload runs on Graviton:
 #   1. API + vision health; /v1/health must report machine=aarch64 and an EC2 instance type
-#   2. run scenario S2 through the API, wait for awaiting_review, approve (SIMULATED) so the run is archived
+#   2. run scenario S2 through the API: first recommendation (report prior, locations unverified), confirm the
+#      observation locations, check the re-assessed recommendation, approve (SIMULATED) so the run is archived
 #   3. CloudWatch: VisionTotalMs datapoints in namespace CLEARPATH with dimension Arch=aarch64
 #   4. S3: runs/*.json archives
 #
@@ -53,7 +54,23 @@ RUN="$(curl -fsS "$URL/api/runs/$RUN_ID")"
 if [[ "$STATUS" == "awaiting_review" ]]; then
   REC="$(json "d['assessment']['recommended']" <<<"$RUN")"
   echo "  $(json "d['metrics']" <<<"$RUN")  ($((SECONDS - T0)) s)"
-  [[ "$REC" == "LOCKDOWN_PLUS_EVACUATE" ]] && ok "recommended $REC (expected LOCKDOWN_PLUS_EVACUATE)" || bad "recommended $REC"
+  # Footage locations are unverified, so the first recommendation uses the report prior only (LOCKDOWN).
+  [[ "$REC" == "LOCKDOWN" ]] && ok "first recommendation $REC (report prior; observation locations unverified)" || bad "first recommendation $REC (expected LOCKDOWN)"
+  NPEND="$(json "len(d['review'].get('pending_observations', []))" <<<"$RUN")"
+  [[ "$NPEND" -ge 1 ]] && ok "$NPEND observations awaiting human location review" || bad "no pending observations"
+  # A reviewer confirms all observation locations (one decision); the agent re-assesses.
+  PEND_JSON="$(json "__import__('json').dumps(d['review']['pending_observations'])" <<<"$RUN")"
+  curl -fsS -X POST -H 'content-type: application/json' \
+    -d "{\"action\":\"confirm_observation\",\"camera_ids\":$PEND_JSON,\"reviewer\":\"verify.sh\",\"note\":\"deployment check\"}" \
+    "$URL/api/runs/$RUN_ID/review" >/dev/null || bad "confirm_observation request failed"
+  T1=$SECONDS
+  while (( SECONDS - T1 < 120 )); do
+    RUN="$(curl -fsS --max-time 10 "$URL/api/runs/$RUN_ID")"
+    [[ "$(json "d['status']" <<<"$RUN")" == "awaiting_review" && "$(json "len(d['review_history'])" <<<"$RUN")" == "1" ]] && break
+    sleep 2
+  done
+  REC="$(json "d['assessment']['recommended']" <<<"$RUN")"
+  [[ "$REC" == "LOCKDOWN_PLUS_EVACUATE" ]] && ok "after confirmation: recommended $REC (expected LOCKDOWN_PLUS_EVACUATE)" || bad "after confirmation: recommended $REC"
   MACHINES="$(json "sorted({a['service'].get('machine') for a in d['analyses'].values()})" <<<"$RUN")"
   [[ "$MACHINES" == "['aarch64']" ]] && ok "every analysis in the run reports service machine aarch64" || bad "analysis service machines $MACHINES"
   curl -fsS -X POST -H 'content-type: application/json' -d '{"action":"approve","reviewer":"verify.sh","note":"deployment check (simulated)"}' \

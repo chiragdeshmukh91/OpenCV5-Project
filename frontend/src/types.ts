@@ -212,6 +212,40 @@ export interface Evidence {
   consistency: { checked: boolean; speed_ratio?: number; direction_gap_deg?: number | null; consistent?: boolean };
   enhanced: boolean;
   analysis_id: string | null;
+  location?: ObservationLocation;
+}
+
+/** Where an observation happened. `zone` is null unless the location is verified or human-confirmed. */
+export interface ObservationLocation {
+  camera_zone: string;
+  zone: string | null;
+  status: 'verified' | 'unverified' | 'human_confirmed' | 'dismissed';
+  confidence: number;
+  basis: string;
+  reasons: string[];
+  footage_environment?: string;
+  camera_environment?: string;
+}
+
+export type ObservationKind = 'candidate_event' | 'observation' | 'fault';
+export type ObservationReviewStatus = 'pending' | 'confirmed' | 'dismissed' | 'not_required';
+
+export interface Observation {
+  camera_id: string;
+  camera_name: string;
+  analysis_id: string | null;
+  camera_zone: string;
+  activity: Activity;
+  activity_label: string;
+  kind: ObservationKind;
+  reason: string;
+  running_track_ids: number[];
+  key_frame: number | null;
+  weapon: { firearm_detector: string | null; weapon_like: WeaponLike[] };
+  location: ObservationLocation;
+  applied: boolean;
+  recorded_at: number;
+  review: { status: ObservationReviewStatus; reviewer: string | null; at: number | null; note: string };
 }
 
 export interface CameraState {
@@ -313,6 +347,8 @@ export interface Assessment {
   recommended: string;
   uncertainty: string[];
   why_not_full_evacuation: string[];
+  /** True when no other option is feasible (e.g. the reviewer rejected the only supported one). */
+  no_feasible_alternative?: boolean;
 }
 
 export interface Gap {
@@ -337,12 +373,15 @@ export interface ReviewRequest {
   gaps: Gap[];
   verification_tasks: VerificationTask[];
   allowed_actions: ReviewAction[];
+  pending_observations?: string[];
 }
 
-export type ReviewAction = 'approve' | 'reject' | 'more_evidence' | 'block_exit';
+export type ReviewAction = 'approve' | 'reject' | 'more_evidence' | 'block_exit' | 'confirm_observation' | 'dismiss_observation';
 
 export interface ReviewHistoryEntry {
   action?: ReviewAction;
+  camera_id?: string | null;
+  camera_ids?: string[];
   option_id?: string | null;
   exit_id?: string | null;
   note?: string;
@@ -395,6 +434,8 @@ export interface Analysis {
     flow_direction_image_deg?: number | null;
     coherence: number;
     track_vectors?: number[][];
+    tracks_detail?: TrackDetail[];
+    running_track_ids?: number[];
   };
   weapon_like?: WeaponLike[];
   weapon_model?: string | null;
@@ -402,9 +443,20 @@ export interface Analysis {
   timings?: Record<string, number>;
   per_frame?: FrameRecord[];
   frame_urls: string[];
+  key_frame?: number | null;
   service?: ServiceInfo;
   synthetic: boolean;
   footage_source?: string;
+}
+
+export interface TrackDetail {
+  id: number;
+  first_frame: number;
+  last_frame: number;
+  points: number;
+  speed_bh_s: number;
+  running: boolean;
+  direction_image_deg: number;
 }
 
 export interface RunMetrics {
@@ -434,6 +486,8 @@ export interface RunState {
   review: ReviewRequest | null;
   review_history: ReviewHistoryEntry[];
   analyses: Record<string, Analysis>;
+  /** Per-camera observation with location status and human review (absent in runs from older backends). */
+  observations?: Record<string, Observation>;
   gaps: Gap[];
   verification_tasks: VerificationTask[];
   action_log: string[];
@@ -446,6 +500,8 @@ export interface ReviewBody {
   action: ReviewAction;
   option_id?: string;
   exit_id?: string;
+  camera_id?: string;
+  camera_ids?: string[];
   note: string;
   reviewer: string;
 }

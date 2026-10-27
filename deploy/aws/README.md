@@ -115,8 +115,10 @@ It checks, and prints evidence for, each of these:
 | Measured on AWS, not claimed | CloudWatch namespace **`CLEARPATH`**, metric `VisionTotalMs` (also `DetectMs`, `FlowMs`) with dimensions **`Arch=aarch64`**, `OpenCV=<version>`, `COOL=<state>` - `aws cloudwatch get-metric-statistics ...` |
 | Runs are archived | `aws s3 ls s3://<bucket>/runs/` -> `runs/<run_id>.json` (full trace, belief, routes, review, timings) |
 
-`verify.sh` starts scenario S2 via the API, waits for `awaiting_review`, checks the recommendation
-(`LOCKDOWN_PLUS_EVACUATE`), approves it (simulated) so the run is archived, then queries CloudWatch and S3.
+`verify.sh` starts scenario S2 via the API and waits for `awaiting_review`. Because the synthetic footage is not
+registered to any camera, the first recommendation is the report-only `LOCKDOWN` with all observations pending. The
+script then confirms the observation locations (one reviewer decision), checks the re-assessed recommendation
+(`LOCKDOWN_PLUS_EVACUATE`), approves it (simulated) so the run is archived, and queries CloudWatch and S3.
 
 Manual equivalents:
 

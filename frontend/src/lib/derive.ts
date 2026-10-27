@@ -2,6 +2,7 @@
 // every string is composed from backend fields (trace, belief, evidence, assessment, gaps).
 import type { Building, RunState, TraceEntry } from '../types';
 import { isPerceiveAnalysis } from './format';
+import { attributedZone, locationApplied } from './observations';
 
 export type Tone = 'threat' | 'caution' | 'clear' | 'info' | 'muted';
 
@@ -71,6 +72,8 @@ export function composeSummary(run: RunState | null): string {
     if (b.localized) parts.push(`Threat localised to ${b.region.join(', ')} (${Math.round(b.region_mass * 100)}% of mass).`);
     else parts.push(`Not localised: P(threat) ${Math.round(b.p_threat * 100)}%, ${b.supporting_observations} supporting visual observation${b.supporting_observations === 1 ? '' : 's'}.`);
   }
+  const pending = Object.values(run.observations ?? {}).filter((o) => o.review.status === 'pending');
+  if (pending.length) parts.push(`${pending.length} camera observation${pending.length === 1 ? '' : 's'} with unknown location await review and are not used.`);
   if (run.gaps.length) parts.push(`${run.gaps.length} coverage gap${run.gaps.length === 1 ? '' : 's'} (${run.gaps.map((g) => g.camera_id).join(', ')}).`);
   return parts.join(' ');
 }
@@ -172,6 +175,8 @@ export interface TimelineItem {
   tag: string;
   phase: string;
   zones: string[];
+  /** True when the entry refers to a camera observation whose location is not verified or confirmed. */
+  locationUnknown: boolean;
   cameraId: string | null;
   analysisId: string | null;
   thumb: string | null;
@@ -200,8 +205,14 @@ export function evidenceTimeline(run: RunState | null, building: Building | null
     if (!aid && cam) aid = run.cameras[cam]?.analysis_id ?? null;
     const a = aid ? run.analyses[aid] : undefined;
     const zones = new Set<string>();
-    if (cam && camZone.get(cam)) zones.add(camZone.get(cam)!);
-    for (const tok of `${e.title} ${e.detail}`.match(/\b[A-Z][A-Z0-9]{1,5}\b/g) ?? []) if (zoneIds.has(tok)) zones.add(tok);
+    const obs = cam ? run.observations?.[cam] : undefined;
+    // A camera's mount zone is only shown when the observation's location is verified / confirmed (or the camera
+    // itself is faulted: a coverage gap really is at the mount point). Otherwise the place is unknown.
+    const locationUnknown = !!obs && obs.kind !== 'fault' && !locationApplied({ location: obs.location });
+    if (!locationUnknown) {
+      if (cam && camZone.get(cam)) zones.add(camZone.get(cam)!);
+      for (const tok of `${e.title} ${e.detail}`.match(/\b[A-Z][A-Z0-9]{1,5}\b/g) ?? []) if (zoneIds.has(tok)) zones.add(tok);
+    }
     if (e.kind === 'observation' && run.scenario.trigger.zone) zones.add(run.scenario.trigger.zone);
     let tag = TAG_FOR[e.kind] ?? e.kind;
     if (e.title.startsWith('Threat provisionally localised')) tag = 'Corroboration';
@@ -213,6 +224,7 @@ export function evidenceTimeline(run: RunState | null, building: Building | null
       tag,
       phase: e.phase,
       zones: [...zones].slice(0, 3),
+      locationUnknown,
       cameraId: cam,
       analysisId: aid,
       thumb: a && a.frame_urls.length ? a.frame_urls[Math.min(a.frame_urls.length - 1, Math.floor(a.frame_urls.length / 2))] : null,
@@ -236,14 +248,22 @@ export function keyObservations(run: RunState | null): Observation[] {
   for (const cam of Object.values(run.cameras)) {
     const ev = cam.evidence;
     if (!ev) continue;
+    const zone = attributedZone(ev);
+    if (!zone) {
+      if (ev.location?.status === 'dismissed') continue;
+      if (ev.activity === 'flight' || ev.activity === 'agitated' || ev.weapon_like.length) {
+        out.push({ text: `Candidate event on ${cam.id}: ${ev.activity === 'flight' ? 'people running in one direction' : ev.activity === 'agitated' ? 'rapid movement' : 'weapon-like object'} — location unknown, needs review`, tone: 'caution', cameraId: cam.id });
+      }
+      continue;
+    }
     if (ev.activity === 'flight') {
-      out.push({ text: `People fleeing in ${ev.zone} (${cam.id}) toward ${ev.flight_heading_deg?.toFixed(0)}°`, tone: 'threat', cameraId: cam.id });
+      out.push({ text: `People fleeing in ${zone} (${cam.id}) toward ${ev.flight_heading_deg?.toFixed(0)}°`, tone: 'threat', cameraId: cam.id });
     } else if (ev.activity === 'agitated') {
-      out.push({ text: `Rapid, incoherent movement in ${ev.zone} (${cam.id})`, tone: 'caution', cameraId: cam.id });
+      out.push({ text: `Rapid, incoherent movement in ${zone} (${cam.id})`, tone: 'caution', cameraId: cam.id });
     } else if (ev.activity === 'congested') {
-      out.push({ text: `Dense, near-stationary crowd in ${ev.zone} (${cam.id})`, tone: 'caution', cameraId: cam.id });
+      out.push({ text: `Dense, near-stationary crowd in ${zone} (${cam.id})`, tone: 'caution', cameraId: cam.id });
     } else if (ev.activity === 'calm' || ev.activity === 'empty') {
-      quiet.push(ev.zone);
+      quiet.push(zone);
     }
     if (ev.weapon_like.length) out.push({ text: `Weapon-like object (${ev.weapon_like[0].cls}) on ${cam.id} — needs human verification`, tone: 'caution', cameraId: cam.id });
   }

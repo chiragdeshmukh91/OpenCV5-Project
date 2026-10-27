@@ -29,6 +29,19 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_me
 
 building = Building.load()
 vision = VisionClient()
+
+GENERATE_HINT = "run `python scripts/generate_footage.py` in backend/ (clips are not in git)"
+
+
+def missing_clips() -> list[str]:
+    """Clips listed in the footage manifest whose video file is absent (they are generated, not committed)."""
+    return sorted(cid for cid, c in footage_manifest().get("clips", {}).items() if not (FOOTAGE_DIR / c["file"]).exists())
+
+
+if _missing := missing_clips():
+    logging.getLogger("clearpath").warning("%d footage clip(s) missing in %s (%s); %s. Analyses of these clips will fail.",
+                                           len(_missing), FOOTAGE_DIR, ", ".join(_missing[:4]) + ("…" if len(_missing) > 4 else ""),
+                                           GENERATE_HINT)
 manager = AgentManager(building, vision)
 
 
@@ -38,8 +51,10 @@ class StartRun(BaseModel):
 
 
 class Review(BaseModel):
-    action: Literal["approve", "reject", "more_evidence", "block_exit"]
+    action: Literal["approve", "reject", "more_evidence", "block_exit", "confirm_observation", "dismiss_observation"]
     option_id: str | None = None
+    camera_id: str | None = None
+    camera_ids: list[str] = Field(default_factory=list)
     exit_id: str | None = None
     note: str = ""
     reviewer: str = "Safety lead"
@@ -81,7 +96,7 @@ def scenarios() -> dict:
 def footage() -> dict:
     m = footage_manifest()
     uploads = sorted(p.stem for p in FOOTAGE_DIR.glob("upload_*"))
-    return {"clips": m.get("clips", {}), "uploads": uploads}
+    return {"clips": m.get("clips", {}), "uploads": uploads, "missing": missing_clips()}
 
 
 @app.get("/api/footage/{clip_id}/preview.jpg")
@@ -90,7 +105,8 @@ def footage_preview(clip_id: str, frame: int = 12) -> Response:
         raise HTTPException(400, "bad clip id")
     path = next(iter(sorted(FOOTAGE_DIR.glob(f"{clip_id}.*"))), None)
     if path is None or path.suffix == ".json":
-        raise HTTPException(404, "clip not found")
+        hint = f"; {GENERATE_HINT}" if clip_id in footage_manifest().get("clips", {}) else ""
+        raise HTTPException(404, f"clip not found: {clip_id}{hint}")
     cap = cv.VideoCapture(str(path))
     cap.set(cv.CAP_PROP_POS_FRAMES, frame)
     ok, img = cap.read()

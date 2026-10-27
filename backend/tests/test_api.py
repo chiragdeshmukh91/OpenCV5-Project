@@ -141,3 +141,13 @@ def test_cool_marker_states(vsvc, monkeypatch):
     assert vsvc.get("/v1/health").json()["runtime"]["cool"]["state"] == "expected_not_verified"
     monkeypatch.setattr(settings, "cool_marker", "General configuration for OpenCV")  # present in every build
     assert vsvc.get("/v1/health").json()["runtime"]["cool"]["state"] == "verified_marker"
+
+
+def test_missing_footage_is_reported_with_the_fix(api, monkeypatch, tmp_path):
+    """Regression: a fresh checkout has the manifest but not the generated .avi clips; previews returned a bare 404."""
+    from clearpath import main
+    monkeypatch.setattr(main, "FOOTAGE_DIR", tmp_path)
+    assert "normal_a" in main.missing_clips()
+    r = api.get("/api/footage/normal_a/preview.jpg")
+    assert r.status_code == 404 and "generate_footage.py" in r.json()["detail"]
+    assert "normal_a" in api.get("/api/footage").json()["missing"]

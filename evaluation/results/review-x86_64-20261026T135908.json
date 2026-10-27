@@ -1,0 +1,966 @@
+{
+  "meta": {
+    "generated": "2026-10-26T13:59:08Z",
+    "machine": "x86_64"
+  },
+  "checks_passed": 160,
+  "checks_total": 160,
+  "scenarios": [
+    {
+      "scenario": "S1-unverified-report",
+      "location_attribution_before_review": {
+        "observations": 7,
+        "unverified": 7,
+        "with_zone_before_review": 0,
+        "alert_zones_before_review": [],
+        "localized_before_review": false
+      },
+      "steps": [
+        {
+          "step": "initial pause",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "confirm 7",
+          "recommended": "HOLD",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "reject HOLD",
+          "recommended": "HOLD",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "2 vs 2"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            },
+            {
+              "check": "rejected option no longer recommended, or explicitly flagged as the only feasible option",
+              "pass": true,
+              "detail": "flagged no_feasible_alternative"
+            }
+          ]
+        },
+        {
+          "step": "approve",
+          "recommended": "HOLD",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "3 vs 3"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            },
+            {
+              "check": "run complete, all actions SIMULATED",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "S2-corroborated-east",
+      "location_attribution_before_review": {
+        "observations": 7,
+        "unverified": 7,
+        "with_zone_before_review": 0,
+        "alert_zones_before_review": [],
+        "localized_before_review": false
+      },
+      "steps": [
+        {
+          "step": "initial pause",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "dismiss CAM-02",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "confirm 6",
+          "recommended": "LOCKDOWN_PLUS_EVACUATE",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C3', 'GYM'] allowed=['C3', 'GYM']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "2 vs 2"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "2 <= 2"
+            }
+          ]
+        },
+        {
+          "step": "reject LOCKDOWN_PLUS_EVACUATE",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C3', 'GYM'] allowed=['C3', 'GYM']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "3 vs 3"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "2 <= 2"
+            },
+            {
+              "check": "rejected option no longer recommended, or explicitly flagged as the only feasible option",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "step": "approve",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C3', 'GYM'] allowed=['C3', 'GYM']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "4 vs 4"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "2 <= 2"
+            },
+            {
+              "check": "run complete, all actions SIMULATED",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "S3-degraded-sensing",
+      "location_attribution_before_review": {
+        "observations": 5,
+        "unverified": 5,
+        "with_zone_before_review": 0,
+        "alert_zones_before_review": [],
+        "localized_before_review": false
+      },
+      "steps": [
+        {
+          "step": "initial pause",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "confirm 5",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "5 vs 5"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "reject LOCKDOWN",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "2 vs 2"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "5 vs 5"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            },
+            {
+              "check": "rejected option no longer recommended, or explicitly flagged as the only feasible option",
+              "pass": true,
+              "detail": "flagged no_feasible_alternative"
+            }
+          ]
+        },
+        {
+          "step": "approve",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "3 vs 3"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "5 vs 5"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            },
+            {
+              "check": "run complete, all actions SIMULATED",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "S4-west-threat-congested-exit",
+      "location_attribution_before_review": {
+        "observations": 7,
+        "unverified": 7,
+        "with_zone_before_review": 0,
+        "alert_zones_before_review": [],
+        "localized_before_review": false
+      },
+      "steps": [
+        {
+          "step": "initial pause",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "0 vs 0"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "dismiss CAM-01",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=[] allowed=[]"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "1 vs 1"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "not localised -> no zone reported as threat region by routing hazard from camera evidence",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "0 <= 0"
+            }
+          ]
+        },
+        {
+          "step": "confirm 6",
+          "recommended": "LOCKDOWN_PLUS_EVACUATE",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C2'] allowed=['C2']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "2 vs 2"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "1 <= 1"
+            }
+          ]
+        },
+        {
+          "step": "reject LOCKDOWN_PLUS_EVACUATE",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C2'] allowed=['C2']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "review.pending_observations == pending observations",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "3 vs 3"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "1 <= 1"
+            },
+            {
+              "check": "rejected option no longer recommended, or explicitly flagged as the only feasible option",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "step": "approve",
+          "recommended": "LOCKDOWN",
+          "checks": [
+            {
+              "check": "observation review status <-> location <-> applied",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "alert zones only where an applied candidate event is located",
+              "pass": true,
+              "detail": "alerted=['C2'] allowed=['C2']"
+            },
+            {
+              "check": "camera evidence location == observation location (twin == review panel)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "every decision is in review_history",
+              "pass": true,
+              "detail": "4 vs 4"
+            },
+            {
+              "check": "every observation decision has a trace entry",
+              "pass": true,
+              "detail": "7 vs 7"
+            },
+            {
+              "check": "evidence frames are kept on disk (never deleted by a decision)",
+              "pass": true,
+              "detail": ""
+            },
+            {
+              "check": "belief supporting observations counts only applied events",
+              "pass": true,
+              "detail": "1 <= 1"
+            },
+            {
+              "check": "run complete, all actions SIMULATED",
+              "pass": true,
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

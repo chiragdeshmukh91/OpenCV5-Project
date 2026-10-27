@@ -145,3 +145,14 @@ def test_reviewer_blocked_exit_removed_from_routes(building):
     routing = compute_routes(building, belief, ev, {"blocked_exits": ["EX-S"]})
     assert "EX-S" in routing["blocked_exits"]
     assert all(r["exit"] != "EX-S" and "EX-S" not in r["path"] for r in routing["routes"])
+
+
+def test_rejecting_the_only_feasible_option_is_flagged_not_silently_reproposed(building):
+    """Regression: rejecting HOLD (or LOCKDOWN) when nothing else is feasible used to re-recommend it with no notice."""
+    belief = make_belief(building, 0.05, region=WEST, localized=False)
+    _, a = run(building, belief, evidence(*(obs(z) for z in CLEAR_EAST_AND_NORTH)), rejected={"HOLD"})
+    assert a["recommended"] == "HOLD"
+    assert a["no_feasible_alternative"] is True
+    assert "only evidence-supported option" in a["uncertainty"][0] and "rejected" in a["uncertainty"][0]
+    _, b = run(building, belief, evidence(*(obs(z) for z in CLEAR_EAST_AND_NORTH)))
+    assert b["no_feasible_alternative"] is False

@@ -1,13 +1,14 @@
-import { Activity, Boxes, BrainCircuit, Camera, ChevronsLeft, ChevronsRight, FlaskConical, History, LayoutDashboard, Clock, ScanEye, UserCheck } from 'lucide-react';
+import { Play, Activity, Boxes, BrainCircuit, Camera, ChevronsLeft, ChevronsRight, FlaskConical, History, LayoutDashboard, Clock, ScanEye, UserCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { RunState } from '../types';
 import { cameraCoverage } from '../lib/derive';
 import { cx } from './ui';
 import { Dot } from './viz';
 
-export type PageId = 'operations' | 'twin' | 'evidence' | 'intel' | 'lab' | 'history';
+export type PageId = 'start' | 'operations' | 'twin' | 'evidence' | 'intel' | 'lab' | 'history';
 
 export const NAV: { id: PageId; label: string; icon: ReactNode }[] = [
+  { id: 'start', label: 'Start', icon: <Play size={18} /> },
   { id: 'operations', label: 'Operations', icon: <LayoutDashboard size={18} /> },
   { id: 'twin', label: 'Digital Twin', icon: <Boxes size={18} /> },
   { id: 'evidence', label: 'Evidence', icon: <ScanEye size={18} /> },

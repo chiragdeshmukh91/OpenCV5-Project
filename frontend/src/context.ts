@@ -14,7 +14,8 @@ export interface AppCtx {
   overrides: Record<string, string>;
   setOverrides: (o: Record<string, string>) => void;
   reloadFootage: () => void;
-  startRun: (scenarioId?: string) => Promise<void>;
+  /** Resolves true when the backend accepted the run. */
+  startRun: (scenarioId?: string) => Promise<boolean>;
   cancelRun: () => Promise<void>;
   starting: boolean;
   refresh: () => void;
@@ -30,6 +31,13 @@ export interface AppCtx {
   sessionRuns: { id: string; scenario: string; startedAt: number }[];
   historyRunId: string | null;
   openHistory: (runId: string | null) => void;
+  /** Full-screen evidence review (footage + human decisions); camera to focus or null for the first pending one. */
+  reviewOpen: boolean;
+  reviewCamera: string | null;
+  openReview: (cameraId?: string | null) => void;
+  closeReview: () => void;
+  /** Return to the start / overview screen (UI state only; backend runs are untouched). */
+  goToStart: () => void;
 }
 
 export const AppContext = createContext<AppCtx | null>(null);

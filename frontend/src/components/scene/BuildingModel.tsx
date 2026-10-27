@@ -56,6 +56,13 @@ function slab(zone: Zone, f: SceneFrame, depth: number, inset = 0): THREE.Extrud
   return g;
 }
 
+export type HeatTone = 'threat' | 'caution';
+/** Red only for a threat localised by camera evidence; amber for report-only / unverified heat. */
+export const TONE: Record<HeatTone, { heat: string; emissive: string; roofBase: string; roofHot: string; roofHeat: string }> = {
+  threat: { heat: '#c0262d', emissive: '#ff2a2a', roofBase: '#3a1418', roofHot: '#b91c1c', roofHeat: '#e06060' },
+  caution: { heat: '#b7791f', emissive: '#f59e0b', roofBase: '#3a2a10', roofHot: '#d97706', roofHeat: '#e0a450' },
+};
+
 function ZoneFloor({
   zone,
   f,
@@ -67,7 +74,9 @@ function ZoneFloor({
   onHover,
   onSelect,
   onDouble,
+  tone = 'threat',
 }: {
+  tone?: HeatTone;
   zone: Zone;
   f: SceneFrame;
   heat: number;
@@ -83,9 +92,9 @@ function ZoneFloor({
   const mat = useRef<THREE.MeshStandardMaterial>(null);
   const base = zone.kind === 'corridor' ? '#1a2a40' : '#15233a';
   const color = useMemo(() => {
-    const c = mixOklab(base, '#c0262d', Math.min(1, heat));
+    const c = mixOklab(base, TONE[tone].heat, Math.min(1, heat));
     return selected ? mixOklab(c, '#5eead4', 0.35) : hovered ? mixOklab(c, '#7dd3fc', 0.18) : c;
-  }, [base, heat, selected, hovered]);
+  }, [base, heat, selected, hovered, tone]);
   useFrame(({ clock }) => {
     if (!mat.current) return;
     const pulse = REDUCED ? 0.8 : 0.6 + 0.4 * Math.sin(clock.elapsedTime * 2.4);
@@ -100,7 +109,7 @@ function ZoneFloor({
       onClick={interactive ? (e: ThreeEvent<MouseEvent>) => (e.stopPropagation(), onSelect(zone.id)) : undefined}
       onDoubleClick={interactive ? (e: ThreeEvent<MouseEvent>) => (e.stopPropagation(), onDouble()) : undefined}
     >
-      <meshStandardMaterial ref={mat} color={color} emissive="#ff2a2a" emissiveIntensity={0} roughness={0.82} metalness={0.08} toneMapped={!hot} />
+      <meshStandardMaterial ref={mat} color={color} emissive={TONE[tone].emissive} emissiveIntensity={0} roughness={0.82} metalness={0.08} toneMapped={!hot} />
     </mesh>
   );
 }
@@ -218,7 +227,7 @@ function roofTexture(): THREE.Texture {
 }
 
 /** Roof slabs (one per zone) plus a glowing footprint outline; opaque in campus view, faded inside. */
-function Roofs({ b, f, level, heatOf, hot, onClick }: { b: Building; f: SceneFrame; level: ViewLevel; heatOf: (z: string) => number; hot: Set<string>; onClick: () => void }) {
+function Roofs({ b, f, level, heatOf, hot, onClick, tone = 'threat' }: { b: Building; f: SceneFrame; level: ViewLevel; heatOf: (z: string) => number; hot: Set<string>; onClick: () => void; tone?: HeatTone }) {
   const roofs = useMemo(() => b.zones.map((z) => ({ z, g: slab(z, f, 0.35, 0.05) })), [b, f]);
   const outline = useMemo(() => {
     const pts: number[] = [];
@@ -268,8 +277,8 @@ function Roofs({ b, f, level, heatOf, hot, onClick }: { b: Building; f: SceneFra
             <meshStandardMaterial
               ref={(m) => (mats.current[i] = m)}
               map={isHot ? null : tex}
-              color={isHot ? mixOklab('#3a1418', '#b91c1c', 0.7) : mixOklab('#c9d7ea', '#e06060', h * 0.6)}
-              emissive="#ff2a2a"
+              color={isHot ? mixOklab(TONE[tone].roofBase, TONE[tone].roofHot, 0.7) : mixOklab('#c9d7ea', TONE[tone].roofHeat, h * 0.6)}
+              emissive={TONE[tone].emissive}
               emissiveIntensity={isHot ? 0.45 : 0}
               roughness={0.85}
               metalness={0.15}
@@ -370,7 +379,10 @@ export function BuildingModel({
   onSelectZone,
   onBuildingClick,
   onEnterFloor,
+  tone = 'threat',
 }: {
+  /** 'caution' (amber) while the threat is not localised by camera evidence; 'threat' (red) once it is. */
+  tone?: HeatTone;
   b: Building;
   f: SceneFrame;
   level: ViewLevel;
@@ -406,10 +418,11 @@ export function BuildingModel({
           onHover={onHover}
           onSelect={onSelectZone}
           onDouble={onEnterFloor}
+          tone={tone}
         />
       ))}
       <Walls segs={segs} f={f} level={level} />
-      <Roofs b={b} f={f} level={level} heatOf={heatOf} hot={hot} onClick={onBuildingClick} />
+      <Roofs b={b} f={f} level={level} heatOf={heatOf} hot={hot} onClick={onBuildingClick} tone={tone} />
       <Exits b={b} f={f} blocked={blocked} />
     </group>
   );

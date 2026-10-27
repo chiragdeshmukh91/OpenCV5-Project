@@ -113,7 +113,7 @@ export function TwinPage() {
 
 // ------------------------------------------------------------------ Evidence
 export function EvidencePage() {
-  const { building, run, selectedCamera, selectedAnalysis, selectCamera, openAnalysis, follow, setFollow, scenarios, scenarioId, overrides } = useApp();
+  const { building, run, selectedCamera, selectedAnalysis, selectCamera, openAnalysis, follow, setFollow, scenarios, scenarioId, overrides, openReview } = useApp();
   const scen = scenarios.find((s) => s.id === scenarioId);
   const scenarioClips = useMemo(() => ({ ...(scen?.cameras ?? {}), ...overrides }), [scen, overrides]);
   const analyses = run ? Object.values(run.analyses) : [];
@@ -133,13 +133,25 @@ export function EvidencePage() {
         />
       </div>
       <div className="flex min-h-0 flex-col gap-3 wide:overflow-y-auto scroll-thin [&>*]:shrink-0">
-        <Card title="Per-camera evidence" icon={<ScanEye size={15} />} bodyClassName="overflow-x-auto scroll-thin">
+        <Card
+          title="Per-camera evidence"
+          icon={<ScanEye size={15} />}
+          bodyClassName="overflow-x-auto scroll-thin"
+          right={
+            run && Object.keys(run.analyses).length > 0 ? (
+              <button type="button" className="btn-primary py-1 text-[11.5px]" onClick={() => openReview(null)}>
+                Open evidence review (full-size footage)
+              </button>
+            ) : undefined
+          }
+        >
           <table className="w-full min-w-[720px] text-[11.5px]">
             <thead>
               <tr className="text-left text-[9.5px] uppercase tracking-[0.08em] text-ink-400">
                 <th className="px-3 py-1.5 font-medium">Camera</th>
                 <th className="px-1 py-1.5 font-medium">Status</th>
                 <th className="px-1 py-1.5 font-medium">Activity</th>
+                <th className="px-1 py-1.5 font-medium">Location</th>
                 <th className="px-1 py-1.5 text-right font-medium">Reliab.</th>
                 <th className="px-1 py-1.5 text-right font-medium">People</th>
                 <th className="px-1 py-1.5 text-right font-medium">Speed BH/s</th>
@@ -166,6 +178,15 @@ export function EvidencePage() {
                       <Chip tone={st === 'analyzed' ? 'clear' : st === 'analyzing' ? 'info' : st === 'pending_recheck' ? 'caution' : st === 'fault' ? 'neutral' : 'muted'}>{st.replace('_', ' ')}</Chip>
                     </td>
                     <td className="px-1 py-1.5">{act ? <Chip tone={act.tone}>{act.label}</Chip> : <span className="text-ink-500">—</span>}</td>
+                    <td className="px-1 py-1.5">
+                      {ev?.location ? (
+                        <Chip tone={ev.location.zone ? 'clear' : ev.location.status === 'dismissed' ? 'muted' : 'caution'} title={ev.location.reasons.join(' ')}>
+                          {ev.location.zone ? `${ev.location.zone} · ${ev.location.status === 'verified' ? 'verified' : 'confirmed'}` : ev.location.status === 'dismissed' ? 'dismissed' : 'unknown'}
+                        </Chip>
+                      ) : (
+                        <span className="text-ink-500">—</span>
+                      )}
+                    </td>
                     <td className="tnum px-1 py-1.5 text-right">{num(cs?.reliability ?? null)}</td>
                     <td className="tnum px-1 py-1.5 text-right">{ev ? `${num(ev.persons, 0)} / ${ev.persons_max}` : '—'}</td>
                     <td className="tnum px-1 py-1.5 text-right">{ev ? `${num(ev.speed_bh_s)} / ${num(ev.flow_speed_bh_s)}` : '—'}</td>
@@ -383,7 +404,7 @@ export function ReportView({ r, live }: { r: RunState; live: boolean }) {
       <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {[
           ['P(threat)', pct(r.belief?.p_threat, 0), prio.label],
-          ['Region', r.belief?.region.join(', ') ?? '—', r.belief ? `${pct(r.belief.region_mass)} mass` : ''],
+          ['Region', r.belief ? (r.belief.localized ? r.belief.region.join(', ') : 'not localised') : '—', r.belief ? (r.belief.localized ? `${pct(r.belief.region_mass)} mass` : `report named ${r.scenario.trigger.zone} (unverified)`) : ''],
           ['Recommended', r.assessment ? r.assessment.recommended.replace('_PLUS_', ' + ') : '—', r.approved_option ? `approved: ${r.approved_option}` : 'not approved'],
           ['Vision', `${r.metrics.vision_calls} calls`, `${r.metrics.reanalyses} re-analyses · ${r.metrics.faults} faults`],
         ].map(([k, v, s]) => (

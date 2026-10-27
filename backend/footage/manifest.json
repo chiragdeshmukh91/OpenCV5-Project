@@ -14,6 +14,11 @@
           90
         ]
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "congested",
         "people": 14,
@@ -26,6 +31,11 @@
       "source": "OpenCV sample vtest.avi (background plate + real pedestrian sprites), recomposited",
       "spec": {
         "behavior": "empty"
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "empty",
@@ -46,6 +56,11 @@
           60
         ]
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "empty",
         "people": 0,
@@ -60,6 +75,11 @@
         "behavior": "flight",
         "direction": "left",
         "people": 9
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "flight",
@@ -77,6 +97,11 @@
         "people": 7,
         "flip": true
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "flight",
         "people": 7,
@@ -91,6 +116,11 @@
         "behavior": "flight",
         "direction": "right",
         "people": 9
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "flight",
@@ -112,6 +142,11 @@
           30
         ]
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "flight",
         "people": 8,
@@ -127,6 +162,11 @@
         "people": 6,
         "frozen": true
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "normal",
         "people": 6,
@@ -140,6 +180,11 @@
       "spec": {
         "behavior": "normal",
         "people": 6
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "normal",
@@ -155,6 +200,11 @@
         "behavior": "normal",
         "people": 5,
         "flip": true
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "normal",
@@ -174,6 +224,11 @@
           60,
           30
         ]
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "normal",
@@ -195,6 +250,11 @@
           90
         ]
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "normal",
         "people": 4,
@@ -211,6 +271,11 @@
         "smoke": 0.95,
         "flip": true
       },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
+      },
       "ground_truth": {
         "behavior": "normal",
         "people": 7,
@@ -225,6 +290,11 @@
         "behavior": "normal",
         "people": 5,
         "tamper_after": 0.2
+      },
+      "scene": {
+        "environment": "outdoor",
+        "recorded_by_camera": null,
+        "description": "Outdoor pedestrian plaza (OpenCV sample vtest.avi), not filmed at the school"
       },
       "ground_truth": {
         "behavior": "normal",

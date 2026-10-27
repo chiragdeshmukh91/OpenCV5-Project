@@ -190,11 +190,15 @@ def assess_options(b: Building, belief: dict[str, Any], routing: dict[str, Any],
            ["Shelter for the specific hazard"], ["Wrong procedure for this hazard type"])
 
     feasible = [o for o in opts if o["feasible"]]
+    no_alternative = False
     if feasible:
         rec = max(feasible, key=lambda o: o["score"])
     else:
+        # Nothing feasible is left (typically: the reviewer rejected the only option whose preconditions hold).
+        # Fall back to the evidence-supported baseline, and say so explicitly instead of silently re-proposing it.
         fallback = "LOCKDOWN" if p >= HOLD_MAX_P else "HOLD"
         rec = next(o for o in opts if o["id"] == fallback)
+        no_alternative = True
     why_not_evac = next(o for o in opts if o["id"] == "EVACUATE")
     uncertainty = [
         f"P(active threat) = {p:.2f} (P(no threat) = {belief['p_none']:.2f}).",
@@ -202,5 +206,10 @@ def assess_options(b: Building, belief: dict[str, Any], routing: dict[str, Any],
          f"normalised entropy {belief['entropy']:.2f}.") if p >= HOLD_MAX_P else "Location is not meaningful at this threat level.",
         "Route validity is a graph property; operational safety additionally requires recent, reliable camera verification.",
     ] + [f"Coverage gap: {g['camera_id']} ({', '.join(g['issues']) or g['reason']}) — zone {g['zone']} is unobserved." for g in gaps]
+    if no_alternative:
+        uncertainty.insert(0, f"No other procedure's preconditions hold; {rec['id']} remains the only evidence-supported "
+                              f"option{' although the reviewer rejected it' if rec['id'] in rejected else ''}. "
+                              f"The reviewer can approve it, request more evidence, or cancel the run.")
     return {"options": opts, "recommended": rec["id"], "uncertainty": uncertainty,
+            "no_feasible_alternative": no_alternative,
             "why_not_full_evacuation": [pc["detail"] for pc in why_not_evac["preconditions"] if not pc["pass"]]}

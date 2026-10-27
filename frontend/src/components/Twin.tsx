@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
+import { locationApplied } from '../lib/observations';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { AutoClearGuard } from './scene/CampusScene';
 import { Html, Line, OrbitControls, OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
@@ -160,7 +161,10 @@ function ZoneBlock({
   selected,
   onHover,
   onClick,
+  caution = false,
 }: {
+  /** true while the threat is not localised by camera evidence: amber instead of red */
+  caution?: boolean;
   zone: Zone;
   f: Frame;
   heat: number; // 0..1 threat intensity relative to the max
@@ -177,8 +181,8 @@ function ZoneBlock({
   const roofMat = useRef<THREE.MeshStandardMaterial>(null);
   const floorMat = useRef<THREE.MeshStandardMaterial>(null);
   const h = dim ? 0 : heat;
-  const roofColor = useMemo(() => mixOklab('#1c304f', '#b3222b', h), [h]);
-  const floorColor = useMemo(() => (corridor ? mixOklab('#0f1f34', '#8f1d23', h) : '#0c1828'), [corridor, h]);
+  const roofColor = useMemo(() => mixOklab('#1c304f', caution ? '#b7791f' : '#b3222b', h), [h, caution]);
+  const floorColor = useMemo(() => (corridor ? mixOklab('#0f1f34', caution ? '#8a5a12' : '#8f1d23', h) : '#0c1828'), [corridor, h, caution]);
   const emissiveBase = hot && !dim ? 0.9 : h * 0.55;
 
   useFrame(({ clock }) => {
@@ -202,7 +206,7 @@ function ZoneBlock({
   return (
     <group>
       <mesh geometry={floor} {...handlers}>
-        <meshStandardMaterial ref={floorMat} color={floorColor} emissive="#ff2a2a" emissiveIntensity={0} roughness={0.9} metalness={0.05} toneMapped={!(corridor && hot)} />
+        <meshStandardMaterial ref={floorMat} color={floorColor} emissive={caution ? "#f59e0b" : "#ff2a2a"} emissiveIntensity={0} roughness={0.9} metalness={0.05} toneMapped={!(corridor && hot)} />
       </mesh>
       {roof && (
         <group position={[0, FLOOR_H + WALL_H, 0]}>
@@ -210,7 +214,7 @@ function ZoneBlock({
             <meshStandardMaterial
               ref={roofMat}
               color={selected ? mixOklab(roofColor, '#4a6b94', 0.35) : roofColor}
-              emissive="#ff2626"
+              emissive={caution ? "#f59e0b" : "#ff2626"}
               emissiveIntensity={0}
               roughness={0.7}
               metalness={0.2}
@@ -572,6 +576,7 @@ function Scene({
           f={f}
           heat={threatIntensity(pz[z.id], maxP)}
           hot={hot.has(z.id)}
+          caution={!run?.belief?.localized}
           dim={!layers.occupancy}
           selected={selectedZone === z.id || hovered === z.id}
           onHover={onHover}
@@ -653,7 +658,7 @@ function Scene({
       {layers.movement &&
         b.cameras.map((c) => {
           const ev = run?.cameras[c.id]?.evidence;
-          if (!ev || ev.flight_heading_deg == null) return null;
+          if (!ev || ev.flight_heading_deg == null || !locationApplied(ev)) return null;
           return <Arrow key={`fl-${c.id}`} from={P(f, c.position, ROUTE_Y + 0.3)} heading={ev.flight_heading_deg} length={6 + 7 * Math.min(1, ev.coherence)} color="#fda4af" />;
         })}
 
@@ -691,13 +696,13 @@ function Scene({
       {layers.region && regionAnchor && run?.belief && (
         <Html position={P(f, regionAnchor, FLOOR_H + WALL_H + 7)} center zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
           <div className="fade-in flex flex-col items-center">
-            <div className="flex items-center gap-1.5 whitespace-nowrap rounded-md border border-threat/80 bg-[#2a0a10]/90 px-2 py-1 text-[11.5px] font-semibold text-[#fecaca] shadow-glow-red backdrop-blur">
+            <div className={cx('flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2 py-1 text-[11.5px] font-semibold backdrop-blur', run.belief.localized ? 'border-threat/80 bg-[#2a0a10]/90 text-[#fecaca] shadow-glow-red' : 'border-caution/80 bg-[#2a1c05]/90 text-caution-bright')}>
               <span className="relative flex h-2.5 w-2.5">
-                <span className="ping-ring absolute inset-0 rounded-full bg-threat" />
-                <span className="relative h-2.5 w-2.5 rounded-full bg-threat" />
+                <span className={cx('ping-ring absolute inset-0 rounded-full', run.belief.localized ? 'bg-threat' : 'bg-caution')} />
+                <span className={cx('relative h-2.5 w-2.5 rounded-full', run.belief.localized ? 'bg-threat' : 'bg-caution')} />
               </span>
               <AlertTriangle size={12} />
-              Threat Zone
+              {run.belief.localized ? 'Threat Zone · camera evidence' : 'Reported area · unverified'}
               {mapZone && <span className="ml-1 rounded border border-threat/60 bg-black/40 px-1 font-mono text-[10px]">{mapZone}</span>}
             </div>
             <div className="h-6 w-px bg-gradient-to-b from-threat to-transparent" />
@@ -848,8 +853,8 @@ function Minimap({ b, run, selected, onZone }: { b: Building; run: RunState | nu
         <polygon
           key={z.id}
           points={z.polygon.map(([x, y]) => `${x},${-y}`).join(' ')}
-          fill={hot.has(z.id) ? '#b91c1c' : threatColor(pz[z.id], maxP)}
-          stroke={selected === z.id ? '#a5f3fc' : hot.has(z.id) ? '#fca5a5' : '#22d3ee'}
+          fill={hot.has(z.id) ? (run?.belief?.localized ? '#b91c1c' : '#b45309') : threatColor(pz[z.id], maxP)}
+          stroke={selected === z.id ? '#a5f3fc' : hot.has(z.id) ? (run?.belief?.localized ? '#fca5a5' : '#fcd34d') : '#22d3ee'}
           strokeOpacity={selected === z.id || hot.has(z.id) ? 1 : 0.45}
           strokeWidth={0.6}
           className="cursor-pointer"

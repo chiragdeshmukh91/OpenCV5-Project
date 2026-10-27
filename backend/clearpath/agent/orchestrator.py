@@ -27,9 +27,12 @@ from ..config import DATA_DIR, FOOTAGE_DIR, SCENARIOS_PATH, settings
 from ..decision.engine import HOLD_MAX_P, assess_options, compute_routes
 from ..twin.building import Building
 from ..vision.client import VisionClient, VisionError
+from .location import assess_location, confirm_location, dismiss_location
 from .perception import ACTIVITY_LABELS, Evidence, ThreatBelief, interpret
 
 TRANSIT_KINDS = {"corridor", "lobby", "cafeteria", "gym", "library"}
+CANDIDATE_ACTIVITIES = {"flight", "agitated"}
+OBSERVATION_ACTIONS = {"confirm_observation", "dismiss_observation"}
 
 
 def load_scenarios() -> dict[str, Any]:
@@ -59,7 +62,8 @@ class Run:
         self.step_delay = settings.agent_step_delay_s if step_delay is None else step_delay
         self.media_dir = DATA_DIR / "runs" / self.id
         self.media_dir.mkdir(parents=True, exist_ok=True)
-        self.evidence: dict[str, Evidence] = {}
+        self.evidence: dict[str, Evidence] = {}  # evidence APPLIED to the belief (location verified or confirmed)
+        self.pending: dict[str, Evidence] = {}  # observations whose location is unknown, awaiting a human
         self.visited: set[str] = set()
         self.faulted: dict[str, list[str]] = {}
         self.followups: list[dict] = []
@@ -71,7 +75,7 @@ class Run:
             "camera_clips": self.camera_clips, "status": "running", "phase": "INITIALIZING", "step": 0,
             "started_at": time.time(), "finished_at": None, "simulation": True, "trace": [], "cameras": {},
             "zones": {}, "belief": None, "belief_history": [], "routing": None, "assessment": None, "review": None,
-            "review_history": [], "analyses": {}, "gaps": [], "verification_tasks": [], "action_log": [],
+            "review_history": [], "analyses": {}, "observations": {}, "gaps": [], "verification_tasks": [], "action_log": [],
             "metrics": {"vision_calls": 0, "vision_ms": 0.0, "reanalyses": 0, "faults": 0}, "error": None,
         }
         for cid, cam in building.cameras.items():
@@ -261,7 +265,7 @@ class Run:
             urls.append(f"/media/runs/{self.id}/{aid}/f{i:03d}.jpg")
         manifest = footage_manifest()["clips"].get(result.get("clip_id", ""), None)
         summary = {k: result[k] for k in ("frames_analyzed", "fps", "frame_size", "preview_width", "params", "quality",
-                                          "persons", "motion", "weapon_like", "weapon_model", "detector", "timings",
+                                          "persons", "motion", "weapon_like", "weapon_model", "detector", "timings", "key_frame",
                                           "per_frame") if k in result}
         summary.update({"analysis_id": aid, "camera_id": cid, "clip_id": result.get("clip_id"), "frame_urls": urls,
                         "service": result.get("service", {}), "synthetic": manifest is not None,
@@ -316,7 +320,54 @@ class Run:
                                                       analysis_id=aid, activity=ev.activity,
                                                       reliability=ev.reliability)
                 return
-        self._commit_evidence(ev)
+        self._record_observation(ev, result)
+
+    # ---------------------------------------------------------------- observation -> location -> belief
+    def _record_observation(self, ev: Evidence, result: dict) -> None:
+        """Attach a location to the observation. Only a verified location is applied to the belief/twin;
+        an unknown location is kept as a pending observation for human review (never silently dropped)."""
+        cam = {**self.b.cameras[ev.camera_id], "id": ev.camera_id}
+        clip = self.camera_clips.get(ev.camera_id)
+        meta = footage_manifest()["clips"].get(clip or "", None)
+        ev.location = assess_location(cam, clip, meta)
+        candidate = ev.activity in CANDIDATE_ACTIVITIES or bool(ev.weapon_like)
+        m = result.get("motion", {})
+        running = [t for t in m.get("tracks_detail", []) if t.get("running")]
+        if ev.activity == "flight":
+            why = (f"{len(running)} of {result['persons']['tracks']} tracked people moved faster than 2.0 body-heights/s "
+                   f"in one direction (coherence {ev.coherence:.2f}, median speed {ev.speed_bh_s} BH/s)")
+        elif ev.activity == "agitated":
+            why = f"{len(running)} tracked people moved fast but not in one direction (coherence {ev.coherence:.2f})"
+        elif ev.weapon_like:
+            why = f"COCO weapon-like object '{ev.weapon_like[0]['cls']}' detected (not a firearm detection)"
+        else:
+            why = ACTIVITY_LABELS[ev.activity]
+        obs = {"camera_id": ev.camera_id, "camera_name": cam["name"], "analysis_id": ev.analysis_id,
+               "camera_zone": ev.zone, "activity": ev.activity, "activity_label": ACTIVITY_LABELS[ev.activity],
+               "kind": "candidate_event" if candidate else "observation", "reason": why,
+               "running_track_ids": [t["id"] for t in running], "key_frame": result.get("key_frame"),
+               "weapon": {"firearm_detector": result.get("weapon_model"), "weapon_like": ev.weapon_like},
+               "location": ev.location, "applied": False, "recorded_at": time.time(),
+               "review": {"status": "not_required" if ev.location["status"] == "verified" else "pending",
+                          "reviewer": None, "at": None, "note": ""}}
+        with self.lock:
+            self.state["observations"][ev.camera_id] = obs
+        if ev.location["status"] == "verified":
+            self._commit_evidence(ev)
+            return
+        self.pending[ev.camera_id] = ev
+        with self.lock:
+            self.state["cameras"][ev.camera_id].update(status="analyzed", activity=ev.activity, reliability=ev.reliability,
+                                                       analysis_id=ev.analysis_id, evidence=ev.to_dict())
+            z = self.state["zones"][ev.zone]
+            if z["observed"] == "unobserved":
+                z["observed"] = "unverified footage"
+        label = "Candidate event" if candidate else "Observation"
+        self._trace("VALIDATE", "validation", f"{label} on {ev.camera_id}: location unknown — not applied",
+                    detail=f"{ACTIVITY_LABELS[ev.activity]}. " + " ".join(ev.location["reasons"]),
+                    reason="A camera's mount zone is only the observation's location if the footage was recorded there. "
+                           "The observation is kept for human review and does not move the threat map.",
+                    data={"analysis_id": ev.analysis_id, "camera_id": ev.camera_id})
 
     # ---------------------------------------------------------------- follow-up logic (vision -> next tool call)
     def _plan_followup(self, cid: str, ev: Evidence, result: dict) -> bool:
@@ -326,6 +377,16 @@ class Run:
                                              "re-processing. Treating the zone as unobserved and looking at adjacent cameras.")
             ev.activity = "unusable"
             self.evidence[cid] = ev
+            cam = {**self.b.cameras[cid], "id": cid}
+            ev.location = assess_location(cam, self.camera_clips.get(cid), footage_manifest()["clips"].get(self.camera_clips.get(cid) or ""))
+            with self.lock:
+                self.state["observations"][cid] = {
+                    "camera_id": cid, "camera_name": cam["name"], "analysis_id": ev.analysis_id, "camera_zone": ev.zone,
+                    "activity": "unusable", "activity_label": ACTIVITY_LABELS["unusable"], "kind": "fault",
+                    "reason": "Feed unusable: " + ", ".join(sorted(issues)).replace("_", " "), "running_track_ids": [],
+                    "key_frame": result.get("key_frame"), "weapon": {"firearm_detector": result.get("weapon_model"), "weapon_like": []},
+                    "location": ev.location, "applied": False, "recorded_at": time.time(),
+                    "review": {"status": "not_required", "reviewer": None, "at": None, "note": ""}}
             return True
         if "low_visibility_haze" in issues:
             self.followups.insert(0, {"camera_id": cid, "enhance": "dehaze", "detect_every": 4, "first": ev, "kind": "haze",
@@ -397,6 +458,10 @@ class Run:
 
     def _commit_evidence(self, ev: Evidence) -> None:
         self.evidence[ev.camera_id] = ev
+        with self.lock:
+            if ev.camera_id in self.state["observations"]:
+                self.state["observations"][ev.camera_id]["applied"] = True
+                self.state["observations"][ev.camera_id]["location"] = ev.location
         before = self.belief.summary()
         delta = self.belief.update(ev)
         s = self._publish_belief()
@@ -461,6 +526,10 @@ class Run:
                     tool={**tool, "result": f"feasible: {', '.join(feas) or 'none'}"},
                     detail=rec["description"],
                     reason="; ".join(f"{p['check']}: {'pass' if p['pass'] else 'fail'} ({p['detail']})" for p in rec["preconditions"]))
+        if assessment.get("no_feasible_alternative"):
+            self._trace("DECIDE", "decision", f"No alternative to {rec['id']}",
+                        reason=assessment["uncertainty"][0],
+                        detail="The agent does not invent a procedure whose preconditions fail; the decision returns to the reviewer.")
         if assessment["why_not_full_evacuation"]:
             self._trace("DECIDE", "decision", "Full evacuation not recommended",
                         reason="; ".join(assessment["why_not_full_evacuation"]))
@@ -469,7 +538,8 @@ class Run:
         a = self.state["assessment"]
         request = {"requested_at": time.time(), "recommended": a["recommended"], "uncertainty": a["uncertainty"],
                    "gaps": self.state["gaps"], "verification_tasks": self.state["verification_tasks"],
-                   "allowed_actions": ["approve", "reject", "more_evidence", "block_exit"]}
+                   "pending_observations": sorted(self.pending),
+                   "allowed_actions": ["approve", "reject", "more_evidence", "block_exit", *sorted(OBSERVATION_ACTIONS)]}
         with self.lock:
             self.state["review"] = request
             self.state["status"] = "awaiting_review"
@@ -486,6 +556,8 @@ class Run:
             self.state["review_history"].append({**inp, "at": time.time(), "recommended": a["recommended"]})
             self.state["review"] = None
             self.state["status"] = "running"
+        if action in OBSERVATION_ACTIONS:
+            return self._decide_observation(action, inp, reviewer, note)
         if action == "approve":
             oid = inp.get("option_id") or a["recommended"]
             opt = next(o for o in a["options"] if o["id"] == oid)
@@ -519,11 +591,61 @@ class Run:
         self.cancelled = True
         return None
 
+    def _decide_observation(self, action: str, inp: dict, reviewer: str, note: str) -> str:
+        for cid in _observation_ids(inp):
+            self._decide_one(action, cid, reviewer, note)
+        return "reassess"
+
+    def _decide_one(self, action: str, cid: str, reviewer: str, note: str) -> None:
+        ev = self.pending.pop(cid)
+        confirm = action == "confirm_observation"
+        ev.location = confirm_location(ev.location, reviewer) if confirm else dismiss_location(ev.location, reviewer)
+        with self.lock:
+            obs = self.state["observations"][cid]
+            obs["location"] = ev.location
+            obs["review"] = {"status": "confirmed" if confirm else "dismissed", "reviewer": reviewer, "at": time.time(),
+                             "note": note}
+            self.state["cameras"][cid]["evidence"] = ev.to_dict()
+        if confirm:
+            self._trace("REVIEW", "human", f"{reviewer} confirmed {cid} observation in {ev.zone}",
+                        detail=f"{obs['activity_label']}. {note}".strip(),
+                        reason="Human-confirmed location: the observation is now applied to the threat belief and the twin.",
+                        changes=[f"observation.{cid}.location -> {ev.zone} (human_confirmed)"],
+                        data={"analysis_id": ev.analysis_id, "camera_id": cid})
+            self._commit_evidence(ev)
+        else:
+            self._trace("REVIEW", "human", f"{reviewer} dismissed {cid} observation",
+                        detail=f"Reason: {note}",
+                        reason="Dismissed observations are excluded from the assessment. The footage and analysis are kept; "
+                               "dismissing does not change anything in the real world.",
+                        changes=[f"observation.{cid}.review -> dismissed"],
+                        data={"analysis_id": ev.analysis_id, "camera_id": cid})
+
     def submit_review(self, payload: dict) -> None:
         if self.state["status"] != "awaiting_review":
             raise ValueError("run is not awaiting review")
+        if self.review_event.is_set():
+            raise ValueError("a review decision is already being processed")
+        if payload.get("action") in OBSERVATION_ACTIONS:
+            ids = _observation_ids(payload)
+            if not ids:
+                raise ValueError("camera_id or camera_ids is required")
+            for cid in ids:
+                if cid not in self.pending:
+                    obs = self.state["observations"].get(cid or "")
+                    raise ValueError(f"observation {cid} is not pending review"
+                                     + (f" (already {obs['review']['status']})" if obs else ""))
+            if payload["action"] == "dismiss_observation" and not (payload.get("note") or "").strip():
+                raise ValueError("a reason is required to dismiss an observation")
         self.review_input = payload
         self.review_event.set()
+
+
+def _observation_ids(payload: dict) -> list[str]:
+    ids = list(payload.get("camera_ids") or [])
+    if payload.get("camera_id"):
+        ids.insert(0, payload["camera_id"])
+    return list(dict.fromkeys(i for i in ids if i))
 
 
 class AgentManager:

@@ -10,26 +10,46 @@ we do not claim the Best Use of COOL award.
 > **SIMULATION ONLY.** Footage is synthetic (real pedestrians from OpenCV's public sample video, recomposited), triggers
 > are simulated reports, and no code path can send a real alert, notification or door command.
 
-![dashboard](docs/screenshots/02-awaiting-review-1600.png)
+> **No firearm detection.** YOLOX-S (COCO-80) has no firearm class and no weapon model is configured; "firearm" only
+> appears in the simulated report text. Footage is not from any school camera, so observation locations are shown as
+> **unknown** until a human reviewer confirms them.
+
+![evidence review](docs/screenshots/v5/after-review-cam03-1600.png)
+
+**Team:** `[[TEAM NAME]]` — `[[members]]`
+
+| Judge documents | |
+|---|---|
+| Technical report | [docs/technical-report.md](docs/technical-report.md) |
+| Architecture | [docs/architecture.mmd](docs/architecture.mmd) ([PNG](docs/architecture.png)) · agent workflow [docs/diagrams/agent_workflow.png](docs/diagrams/agent_workflow.png) |
+| Setup · Deployment · Testing | [docs/setup.md](docs/setup.md) · [docs/deployment.md](docs/deployment.md) · [docs/testing.md](docs/testing.md) |
+| Evaluation (method, results, failure cases) | [evaluation/README.md](evaluation/README.md) |
+| Demo video | `[[VIDEO URL (unlisted, ≤ 5 min)]]`. Local file: [docs/video/clearpath-demo.mp4](docs/video/clearpath-demo.mp4) (4:42). Script: [docs/demo-video-script.md](docs/demo-video-script.md) |
+| Submission checklist | [docs/submission-checklist.md](docs/submission-checklist.md) |
 
 ## Live demo (for judges)
 
 | | |
 |---|---|
-| **App** | **http://52.70.58.148** (plain HTTP, no login) |
-| **Graviton proof** | http://52.70.58.148/v1/health → `"machine": "aarch64"`, `"graviton": true`, `"instance_type": "t4g.small"` |
-| **Where it runs** | One AWS Graviton EC2 instance (`t4g.small`, arm64, us-east-1), deployed with `deploy/aws/` |
+| **App** | `[[URL — redeploy and run deploy/aws/verify.sh first]]` |
+| **Status** | The earlier deployment at `52.70.58.148` (`t4g.small`, us-east-1) was reported verified on 2026-10-26 for commit `a3e70d5`, which predates the location fix. The current code has **not** been redeployed or re-verified. |
+| **Graviton proof** | `GET <URL>/v1/health` → `"machine": "aarch64"`, `"instance_type"` from IMDSv2 |
 
 Suggested 3-minute tour:
 
-1. Start **S1 – unverified report**. The agent looks at 3 of 7 cameras, finds no corroboration and recommends **HOLD**,
-   not evacuation. This is the core idea: one report is never enough to move students.
-2. Start **S3 – degraded sensing**. Frozen and obstructed feeds become coverage gaps, smoke triggers a dehaze re-run,
-   and the agent declines to localise and recommends building-wide **LOCKDOWN** with verification tasks.
-3. Open the **trace** to see how each OpenCV result changed the next tool call, then **approve** (actions are logged as
-   `SIMULATED` only).
+1. The app opens on **Start**. Pick **S2 – corroborated incident** and press **Start analysis**.
+2. When the agent pauses, open **Review evidence**. Each camera observation opens full-size on its key frame, with the
+   tracked people that were measured running highlighted in red. Its location is **unknown**: the footage is OpenCV's
+   outdoor sample video, not a recording from the school's cameras, so nothing is placed on the twin yet and the
+   recommendation is a report-only **LOCKDOWN**.
+3. **Confirm** the candidate events (you assert they happened at the camera's zone) or **Dismiss** them with a reason.
+   After confirming CAM-02/03/07 the agent localises the east wing and recommends **LOCKDOWN → EVACUATE**; then
+   **Approve** or **Reject** (actions are logged as `SIMULATED` only). Every decision appears in the trace.
 
-Each camera analysis takes about 10 s on this 2-vCPU instance, so a scenario takes about 1 minute. The demo is a single
+> The system has **no firearm detector** (YOLOX-S COCO has no firearm class). Firearm claims come only from the
+> simulated report; the footage contains no weapon.
+
+Each camera analysis took about 10 s on the 2-vCPU `t4g.small` (reported), so a scenario takes about 1–1.5 minutes. The demo is a single
 shared instance: starting a new scenario cancels the one in progress, so if a run is already going, wait for it.
 
 ## What it does
@@ -44,23 +64,25 @@ shared instance: starting a new scenario cancels the one in progress, so if a ru
 | AWS | Separate Vision Service designed for Graviton (arm64) EC2; S3 for footage/run archives; CloudWatch metrics with `Arch`/`OpenCV`/`COOL` dimensions; least-privilege instance role; no Docker. Kit in `deploy/aws/`. |
 | COOL | Swappable OpenCV build, verified at runtime by a build-info marker (`/v1/health` → `cool.state`) and a reproducible stock-vs-COOL benchmark harness (`backend/benchmarks/`). **No COOL numbers are claimed until measured on Graviton.** |
 
-## Results (reproducible: `python backend/eval/run_eval.py`)
+## Results (measured; details in [evaluation/README.md](evaluation/README.md))
 
-* Perception: **15/15** clips classified correctly (14 synthetic with generation ground truth + 1 unmodified real clip).
-* Agent: **4/4** scenarios produce the expected recommendation; a naive "evacuate on any weapon report" rule scores **0/4**.
-* Backend tests: **74 passed**; frontend tests: **51 passed** (5 files).
-* AWS (`deploy/aws/verify.sh` on the live instance, 2026-10-26): **all checks passed**. The vision service reports
-  `aarch64` / `t4g.small` via IMDSv2; scenario S2 recommended `LOCKDOWN_PLUS_EVACUATE` with all 6 analyses on
-  `aarch64`; CloudWatch received `VisionTotalMs` (about 10.2 s average per analysis) with `Arch=aarch64`,
-  `OpenCV=5.0.0`, `COOL=not_in_use`; the run was archived to `s3://…/runs/<run_id>.json`.
+All on synthetic composites of OpenCV's public sample video, x86_64 2 vCPU, OpenCV 5.0.0, 2026-10-26.
 
-![AWS architecture](docs/diagrams/clearpath-aws-architecture.png)
+* Activity classification: **15/15** clips (14 synthetic with generation ground truth + unmodified `vtest.avi`).
+* Person detection (clean frames, IoU 0.5): P **0.970** / R **0.932** — optimistic, sprites were cut with the same detector.
+* Running-track classification: P **0.967** / R **0.829**; false candidate events on non-flight clips: **0/10**.
+* Location: **0/26** observations placed in a zone before human review (footage not registered to any camera).
+* Human-review state invariants: **160/160**. Recommendations: before review 4/4 report-only LOCKDOWN; after
+  confirming observation locations **4/4** expected; naive "evacuate on any weapon report" **0/4**.
+* Tests: backend **90 passed**, frontend **77 passed**; type check and production build clean.
+* Pending (not measured): real-footage accuracy, firearm detection, physical location accuracy, Graviton latency for
+  the current code, COOL vs stock.
 
-See [docs/EVALUATION_RESULTS.md](docs/EVALUATION_RESULTS.md) and [docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md).
+![architecture](docs/architecture.png)
 
 ## Run locally
 
-Requirements: Python **3.12+**, Node 20+.
+Requirements: Python **3.12 or 3.13**, Node 20+. Full guide: [docs/setup.md](docs/setup.md). Windows: `start.bat`.
 
 ```bash
 # backend
@@ -124,10 +146,13 @@ it. `--public` opens port 80 to everyone (needed for judging); without it, only 
 
 | ID | Visual input | Expected behaviour |
 |---|---|---|
-| S1 unverified report | normal walking everywhere | report not corroborated → **HOLD** + in-person verification |
-| S2 corroborated east | people fleeing west in central/east cameras | localise east wing → **Lockdown east + evacuate west via verified routes** |
+| S1 unverified report | normal walking everywhere | after review: report not corroborated → **HOLD** + in-person verification |
+| S2 corroborated east | people fleeing west in central/east cameras | after review: localise east wing → **Lockdown east + evacuate west via verified routes** |
 | S3 degraded sensing | lens obstructed, frozen feed, smoke | fault cameras, dehaze re-run, location unresolved → **building-wide LOCKDOWN** + verification tasks |
-| S4 west threat, congested exit | fleeing east + crowd at East Exit | hybrid; east-wing routes **valid on paper but congested** → hold those rooms |
+| S4 west threat, congested exit | fleeing east + crowd at East Exit | after review: hybrid; east-wing routes **valid on paper but congested** → hold those rooms |
+
+Before review every scenario recommends a report-only **LOCKDOWN**: no observation has a verified location until a
+reviewer confirms it in **Review evidence**.
 
 Use **Inputs** in the top bar to assign any clip (or your own uploaded video) to any camera and watch the outcome change.
 
@@ -139,7 +164,8 @@ backend/clearpath/agent     perception → belief, orchestrator (agent loop, tra
 backend/clearpath/decision  routes + procedure assessment
 backend/clearpath/twin      building model + validation
 backend/benchmarks          stock vs COOL benchmark harness + results
-backend/eval                end-to-end evaluation
+backend/eval                end-to-end evaluation (perception + agent)
+evaluation/                 detection, false-alert, location and review-consistency evaluation + results
 frontend/                   dashboard
 deploy/aws/                 Graviton EC2 deployment (systemd + nginx, no Docker)
 docs/                       report, architecture + agent diagrams, evaluation, screenshots

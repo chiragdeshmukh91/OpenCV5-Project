@@ -12,6 +12,7 @@ import { FLOOR_H, WALL_BY_LEVEL } from './BuildingModel';
 import { labelPoint } from '../Twin';
 import { REDUCED } from './motion';
 import { cx } from '../ui';
+import { locationApplied } from '../../lib/observations';
 
 export interface Layers {
   cameras: boolean;
@@ -42,7 +43,7 @@ const columnMaterial = () =>
     fragmentShader: 'varying float vH; uniform float uI; uniform vec3 uC; void main(){ float a = pow(1.0 - clamp(vH,0.0,1.0), 1.8) * uI; gl_FragColor = vec4(uC * a, a); }',
   });
 
-function ThreatColumn({ zones, f, intensity }: { zones: Zone[]; f: SceneFrame; intensity: number }) {
+function ThreatColumn({ zones, f, intensity, color = '#ff3030' }: { zones: Zone[]; f: SceneFrame; intensity: number; color?: string }) {
   const H = 16;
   const geoms = useMemo(
     () =>
@@ -56,6 +57,9 @@ function ThreatColumn({ zones, f, intensity }: { zones: Zone[]; f: SceneFrame; i
     [zones, f],
   );
   const mat = useMemo(columnMaterial, []);
+  useLayoutEffect(() => {
+    mat.uniforms.uC.value.set(color);
+  }, [mat, color]);
   useFrame(({ clock }) => {
     const pulse = REDUCED ? 0.8 : 0.62 + 0.38 * Math.sin(clock.elapsedTime * 2.2);
     mat.uniforms.uI.value = (0.25 + 0.45 * intensity) * pulse;
@@ -67,7 +71,7 @@ function ThreatColumn({ zones, f, intensity }: { zones: Zone[]; f: SceneFrame; i
         <mesh key={i} geometry={g} material={mat} position={[0, FLOOR_H, 0]} renderOrder={20} raycast={() => null} />
       ))}
       {rings.map((pts, i) => (
-        <Line key={i} points={pts} color="#ff5050" lineWidth={3} toneMapped={false} transparent depthTest={false} renderOrder={21} />
+        <Line key={i} points={pts} color={color} lineWidth={3} toneMapped={false} transparent depthTest={false} renderOrder={21} />
       ))}
     </group>
   );
@@ -154,7 +158,8 @@ function FlightStreams({ run, b, f }: { run: RunState; b: Building; f: SceneFram
     () =>
       b.cameras
         .map((c) => ({ c, ev: run.cameras[c.id]?.evidence }))
-        .filter((x) => x.ev && x.ev.flight_heading_deg != null)
+        // only observations whose location is verified or human-confirmed are drawn inside the building
+        .filter((x) => x.ev && x.ev.flight_heading_deg != null && locationApplied(x.ev))
         .map(({ c, ev }) => {
           const [dx, dy] = headingVec(ev!.flight_heading_deg!);
           const start = new THREE.Vector3(...toWorld(f, c.position, FLOOR_H + 0.9));
@@ -385,7 +390,7 @@ export function LiveLayers({
   const blocked = new Set(run?.routing?.blocked_exits ?? []);
   return (
     <group>
-      {layers.region && hot.length > 0 && <ThreatColumn zones={hot} f={f} intensity={Math.min(1, p?.p_threat ?? 0) * (level === 'floor' ? 0.35 : 1)} />}
+      {layers.region && hot.length > 0 && <ThreatColumn zones={hot} f={f} color={p?.localized ? '#ff3030' : '#f59e0b'} intensity={Math.min(1, p?.p_threat ?? 0) * (level === 'floor' ? 0.35 : 1)} />}
       {layers.region && inside &&
         b.zones
           .filter((z) => exclusion.has(z.id) && !hotIds.has(z.id))
@@ -424,16 +429,24 @@ export function LiveLayers({
       {layers.region && anchor && p && (
         <Html position={toWorld(f, anchor, 20)} center zIndexRange={[45, 0]} style={{ pointerEvents: 'none' }} portal={portal}>
           <div className="fade-in flex -translate-y-3 flex-col items-center">
-            <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-threat/80 bg-[#2a0a10]/85 py-1 pl-2 pr-3 text-[12px] font-semibold text-[#fee2e2] shadow-glow-red backdrop-blur">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="ping-ring absolute inset-0 rounded-full bg-threat" />
-                <span className="relative h-2.5 w-2.5 rounded-full bg-threat" />
-              </span>
-              Threat zone
-              <span className="tnum font-mono text-[11px] text-[#fca5a5]">{pct(p.p_threat)}</span>
-            </div>
+            {p.localized ? (
+              <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-threat/80 bg-[#2a0a10]/85 py-1 pl-2 pr-3 text-[12px] font-semibold text-[#fee2e2] shadow-glow-red backdrop-blur">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="ping-ring absolute inset-0 rounded-full bg-threat" />
+                  <span className="relative h-2.5 w-2.5 rounded-full bg-threat" />
+                </span>
+                Threat zone · camera evidence
+                <span className="tnum font-mono text-[11px] text-[#fca5a5]">{pct(p.p_threat)}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-caution/80 bg-[#2a1c05]/85 py-1 pl-2 pr-3 text-[12px] font-semibold text-caution-bright backdrop-blur">
+                <span className="h-2.5 w-2.5 rounded-full bg-caution" />
+                Reported area · unverified
+                <span className="tnum font-mono text-[11px]">{pct(p.p_threat)}</span>
+              </div>
+            )}
             <div className="mt-0.5 whitespace-nowrap font-mono text-[10px] text-[#fecaca] [text-shadow:0_1px_3px_#000]">
-              {hot.map((z) => z.id).join(' · ')} · {pct(mass / Math.max(1e-6, p.p_threat))} of mass
+              {hot.map((z) => z.id).join(' · ')} · {p.localized ? `${pct(mass / Math.max(1e-6, p.p_threat))} of mass` : 'precautionary exclusion from the report only'}
             </div>
           </div>
         </Html>
