@@ -1,4 +1,4 @@
-# CLEARPATH
+# CLEARPATH - Safer Schools, Smarter Decisions
 
 **Agentic vision for school safety assessment.** An OpenCV 5 pipeline analyses camera footage, an agent maintains a
 threat-location belief over a school digital twin, decides which camera to look at next, re-processes footage when the
